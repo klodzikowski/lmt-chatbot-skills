@@ -1,40 +1,40 @@
-# LMT Chatbot — Skills Edition
+# LMT Chatbot — Skills edition
 
-The Class 20 reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot). Same single static HTML file, plus three extensions that turn the bare chatbot into something with memory, lightweight knowledge, and (optional) heavy retrieval.
+A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot). Same single HTML file. Adds persistent memory, a Summarise button, a markdown skill, and minimal RAG on top of the Class 19 baseline.
 
 ## Try it
 
-[klodzikowski.github.io/lmt-chatbot-skills](https://klodzikowski.github.io/lmt-chatbot-skills/)
+[klodzikowski.github.io/lmt-chatbot-skills](https://klodzikowski.github.io/lmt-chatbot-skills/). Paste your OpenAI key into the drawer.
 
-Paste your OpenAI API key into the drawer to start.
+## What's added
 
-## What's added on top of the Class 19 template
+1. **Persistent memory.** A toggle in the drawer keeps the chat across reloads via `localStorage`. Class 20 lives the production upgrade: Supabase, summarisation every few turns, a live database panel.
+2. **Summarise.** A button in the drawer footer. Compresses the running chat into a markdown summary and appends it as an assistant message.
+3. **Markdown skill.** A textarea for a persona, a style guide, a syllabus chapter—any markdown. Prepended to the system prompt on every call.
+4. **Minimal RAG.** A second textarea for a long document. The "Index" button chunks it into ~500-character pieces and embeds each via OpenAI's `text-embedding-3-small`. Top-3 most similar chunks land in the system prompt before each chat.
 
-1. **Persistent memory.** A "Remember conversation between sessions" toggle in the drawer. When on, the chat survives page reloads and tab close (`localStorage`).
-2. **Summarise button** in the drawer footer. Compresses the running conversation into a markdown summary and appends it as an assistant message. Handy when chats get long, or to demo the "conversation as data" idea.
-3. **Markdown skill file.** A textarea where you paste a markdown skill — domain knowledge, persona, style guide, a chapter of your thesis, whatever. It's prepended to the system prompt on every API call. **Skills are the lightweight alternative to RAG**: modern context windows easily fit hundreds of pages of markdown, and the result is deterministic, version-controllable, with zero retrieval-failure modes.
-4. **Minimal RAG.** A second textarea takes a long document, an "Index document" button chunks it into ~500-character pieces and embeds each via OpenAI's `text-embedding-3-small`. Before each chat call, the top-3 most similar chunks are retrieved by cosine similarity and prepended to the system prompt.
+## The argument
 
-The pedagogical headline of the fork: **try a markdown skill before you reach for RAG.** RAG is the heavy hammer for cases where skills genuinely won't fit (huge corpora, frequently changing content). Most "I want my bot to know about X" requests are better served by a markdown file in the prompt.
+Try a markdown skill before reaching for RAG. Modern context windows fit hundreds of pages of markdown—deterministic, version-controllable, no retrieval failures. RAG is the heavy hammer for cases where skills won't fit: huge corpora, frequently changing content. Skills win when someone owns the knowledge; RAG wins when the knowledge already exists and nobody's curating it.
+
+Same pattern as Anthropic's Skills, OpenAI's Custom GPT knowledge files, and Cursor's Rules. Different branding, same shape.
 
 ## How it works
 
-`index.html` is one file, all source visible. Look for these functions in the `<script>` block:
+`index.html` is one file. Key functions in the `<script>` block:
 
-- `summariseConversation()` — calls the chat API with a "summarise as markdown" system prompt, renders the result.
-- `embed(text)` — POSTs to `/v1/embeddings`, returns a 1,536-dimensional vector.
-- `cosineSim(a, b)` — pure-JS arithmetic, no dependencies.
-- `indexDocument()` — chunks the RAG textarea, embeds each chunk, stores `{text, embedding}` per chunk in `ragIndex` (and persists to `localStorage` if it fits).
-- `retrieveContext(query, k)` — embeds the query, sorts by cosine similarity, returns the top-k chunk texts joined by separators.
-- `buildAugmentedSystemPrompt(lastUserMessage)` — assembles the final system prompt as `[user system prompt] + [skill markdown] + [retrieved context]`. Called before each chat completion.
+- `summariseConversation()`: chat API call with a "summarise as markdown" system prompt.
+- `embed(text)`: POSTs to `/v1/embeddings`, returns a 1,536-dimensional vector.
+- `cosineSim(a, b)`: pure JS, no dependencies.
+- `indexDocument()`: chunks the textarea, embeds each chunk, stores `{text, embedding}` per chunk.
+- `retrieveContext(query, k)`: embeds the query, cosine-sorts, returns top-k chunks.
+- `buildAugmentedSystemPrompt(lastUserMessage)`: assembles `[user prompt] + [skill] + [retrieved context]`.
 
-Storage keys are namespaced `lmt-chatbot-skills-*` so this fork doesn't collide with the canonical `lmt-chatbot` if a student runs both on the same `klodzikowski.github.io` origin.
+Storage keys are namespaced `lmt-chatbot-skills-*` to avoid colliding with the canonical `lmt-chatbot` on the same origin.
 
-## Class 20 (Memory and retrieval) — context
+## Class context
 
-This repo is the in-class reference for Class 20 of the 2 MA LMT _Artificial Intelligence_ course. Class 20 extends students' own Class 19 forks of `lmt-chatbot` with the same four capabilities. The instructor demos on this repo; students replicate on their own forks for homework.
-
-Class arc: **memory → JSON → markdown skills → RAG**. The argument: each layer is a different intervention with a different cost. Skills first, RAG only when skills run out.
+In-class reference for Classes 20–21 of the 2 MA LMT _Artificial Intelligence_ course at Adam Mickiewicz University. Class 20 covers memory and persistence; Class 21 covers skills and RAG. Both classes demo on this fork.
 
 ## Licence
 
@@ -42,6 +42,6 @@ MIT. Take it, fork it, ship your own.
 
 ## Lineage
 
-- Forked from [`klodzikowski/lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot) (Apache 2.0). Relicensed MIT here.
+- Forked from [`klodzikowski/lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot) (Apache 2.0). Relicensed MIT.
 - Companion consumer demo: [`klodzikowski/dad_jokes`](https://github.com/klodzikowski/dad_jokes).
-- All three repos share the topic tag `lmt-ai-course`.
+- Topic tag: `lmt-ai-course`.
