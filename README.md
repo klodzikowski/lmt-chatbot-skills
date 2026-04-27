@@ -8,7 +8,7 @@ A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot)
 
 ## What's added
 
-1. **Persistent memory.** A toggle in the drawer keeps the chat across reloads via `localStorage`. Class 20 lives the production upgrade: Supabase, summarisation every few turns, a live database panel.
+1. **Persistent memory.** A toggle in the drawer keeps the chat across reloads via `localStorage`. Class 20 covers a Supabase upgrade as a stretch — same JSON shape, hosted Postgres instead of the browser.
 2. **Summarise.** A button in the drawer footer. Compresses the running chat into a markdown summary and appends it as an assistant message.
 3. **Markdown skill.** A textarea for a persona, a style guide, a syllabus chapter—any markdown. Prepended to the system prompt on every call.
 4. **Minimal RAG.** A second textarea for a long document. The "Index" button chunks it into ~500-character pieces and embeds each via OpenAI's `text-embedding-3-small`. Top-3 most similar chunks land in the system prompt before each chat.
@@ -34,7 +34,7 @@ Storage keys are namespaced `lmt-chatbot-skills-*` to avoid colliding with the c
 
 ## Class context
 
-In-class reference for Classes 20–21 of the 2 MA LMT _Artificial Intelligence_ course at Adam Mickiewicz University. Class 20 covers memory and persistence; Class 21 covers skills and RAG. Both classes demo on this fork.
+In-class reference for Class 20 of the 2 MA LMT _Artificial Intelligence_ course at Adam Mickiewicz University. Class 20 covers all three layers in one 60-min slot: Part 1 — Memory; Part 2 — Skills; Part 3 — RAG. Class 21 picks up Agent Lab on top.
 
 ## Licence
 
