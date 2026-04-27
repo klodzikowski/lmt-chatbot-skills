@@ -1,4 +1,4 @@
-# LMT Chatbot — Skills edition
+# LMT Chatbot—Skills edition
 
 A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot). Adds three layers on top of the bare Class 19 chatbot: persistent memory with a Local↔Supabase backend toggle, three preset skills plus a custom textarea, and a minimal RAG retrieval flow. Single static HTML file, no build step.
 
@@ -25,7 +25,7 @@ Same pattern as Anthropic's Skills, OpenAI's Custom GPT knowledge files, Cursor'
 
 Free tier; ~60 seconds. Sign up at [supabase.com](https://supabase.com) via GitHub; new project, any region.
 
-**SQL Editor (~30 sec)** — paste, then **Run**:
+**SQL Editor (~30 sec)**—paste, then **Run**:
 
 ```sql
 create table chat_memory (
@@ -39,7 +39,7 @@ create table chat_memory (
 alter table chat_memory disable row level security;
 ```
 
-**Or Table Editor UI** — new table `chat_memory`; untick **Enable Row Level Security**; keep the pre-filled `id` (int8 identity) and `created_at` (timestamptz default `now()`); click **Add column** four times for `user_id` (text default `'demo'`), `role` (text), `content` (text), `payload` (jsonb). Save.
+**Or Table Editor UI**—new table `chat_memory`; untick **Enable Row Level Security**; keep the pre-filled `id` (int8 identity) and `created_at` (timestamptz default `now()`); click **Add column** four times for `user_id` (text default `'demo'`), `role` (text), `content` (text), `payload` (jsonb). Save.
 
 Project Settings → API → copy the **Project URL** and the **`anon` public** key. Paste both into the app's Memory drawer after switching the backend to Supabase. The `anon` key is safe in client code—access is gated by Row Level Security policies, not key secrecy. We disabled RLS for the class demo; in production you'd write a policy and keep RLS on.
 
