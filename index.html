@@ -146,6 +146,18 @@
         font-weight: 500;
       }
 
+      /* When RAG retrieval contributed chunks to the system prompt for a
+         specific reply, surface "+N RAG chunks" as a chip on the meta line.
+         Distinct colour from the green cache flag so they don't blend. */
+      .msg-meta .rag-flag {
+        background: rgba(168, 85, 247, .18);
+        border: 1px solid rgba(168, 85, 247, .45);
+        color: #d8b4fe;
+        padding: 0 .35rem;
+        border-radius: 4px;
+        font-weight: 500;
+      }
+
       /* Action chips (copy, regenerate) sit below the assistant meta line. */
       .msg-actions {
         align-self: flex-start;
@@ -972,6 +984,8 @@ Preset use cases (temperature · top-p):
           <summary>RAG</summary>
           <div class="drawer-section-body">
             <p class="field-note" style="margin-top:.55rem">When a skill file isn't enough—too big, or you want retrieval to pick relevant chunks per query—paste a long document and click Index. Top-3 most similar chunks are prepended to the system prompt before each chat call.</p>
+            <p class="field-note" style="margin-top:.7rem;margin-bottom:.35rem;font-weight:600;color:var(--fg)">Try a preset:</p>
+            <div id="preset-docs"></div>
             <div class="field">
               <div class="field-header">
                 <label for="rag-doc">RAG document<button type="button" class="help-tip wide" data-help="Paste a long document—Wikipedia article, syllabus, a chapter of your thesis. The Index button chunks it into ~500-character pieces and embeds each via OpenAI's text-embedding-3-small. Top-3 most similar chunks are prepended to your system prompt before each chat call." aria-label="About RAG">?</button></label>
@@ -1220,6 +1234,37 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         },
       ];
 
+      // Preset RAG documents: clickable buttons that fill the RAG textarea
+      // with example content. Pedagogically picked so the LLM either has
+      // patchy training data on the topic or no data at all—so a correct
+      // answer after indexing must have come from retrieval.
+      const PRESET_DOCS = [
+        {
+          id: "chomsky",
+          name: "Noam Chomsky—life and theory",
+          blurb: "Linguist, philosopher, and the formal-grammar hierarchy.",
+          content: `Avram Noam Chomsky was born on 7 December 1928 in East Oak Lane, Philadelphia, to William Chomsky and Elsie Simonofsky, both Hebrew scholars who had emigrated from Eastern Europe. He earned his PhD from the University of Pennsylvania in 1955 under the supervision of Zellig Harris, with a dissertation titled "Transformational Analysis." He joined the Massachusetts Institute of Technology the same year and spent his entire academic career there, becoming Institute Professor in 1976 and emeritus in 2002. Since 2017 he has also held a part-time position at the University of Arizona.
+
+Chomsky's 1957 monograph "Syntactic Structures" introduced transformational generative grammar and is regarded as the founding text of modern theoretical linguistics. He proposed the language acquisition device—an innate biological capacity unique to humans—and argued that all natural languages share a Universal Grammar. His later "Minimalist Program," introduced in the early 1990s, aims to derive linguistic universals from a small set of computational principles.
+
+The Chomsky hierarchy, published in the 1956 paper "Three models for the description of language," classifies formal grammars into four nested types ordered by expressive power. Type-3 (regular) grammars are the weakest and are recognised by finite automata; their rules have the form A → aB or A → a. Type-2 (context-free) grammars allow rules of the form A → α and are recognised by pushdown automata; they are the standard model for programming-language syntax. Type-1 (context-sensitive) grammars require the right-hand side to be at least as long as the left-hand side, and are recognised by linear-bounded automata. Type-0 (recursively enumerable) grammars have no restrictions and are equivalent in power to Turing machines. Each class strictly contains the next.
+
+Beyond linguistics, Chomsky is known for his political writing. His 1988 book "Manufacturing Consent: The Political Economy of the Mass Media," co-authored with Edward Herman, articulated the propaganda model of media analysis. He has been a prominent critic of US foreign policy since the Vietnam War.`,
+        },
+        {
+          id: "lmt-chatbot",
+          name: "LMT chatbot project",
+          blurb: "Facts about your own class artefact. The LLM cannot know these.",
+          content: `The Łodzikowski LMT chatbot is a teaching artefact for the 2 MA LMT Artificial Intelligence course at Adam Mickiewicz University in Poznań, Poland. It was first deployed on 21 April 2026, the day Class 19 ran. The reference fork "lmt-chatbot-skills" was published on 27 April 2026 and adds persistent memory, three preset skills, and a minimal RAG flow on top of the bare Class 19 chatbot. The default model is gpt-4o-mini. Chat history can be persisted in either browser localStorage or a hosted Supabase Postgres database via a runtime toggle. The retrieval layer uses OpenAI's text-embedding-3-small with cosine similarity over chunks of about 500 characters. The course instructor is Kacper Łodzikowski. The Class 20 reference fork lives at https://github.com/klodzikowski/lmt-chatbot-skills.`,
+        },
+        {
+          id: "glowacki",
+          name: "Głowacki Conjecture (made-up)",
+          blurb: "Fictional. Strongest demo of RAG-only knowledge—the LLM cannot guess.",
+          content: `The Głowacki Conjecture, proposed in 2024 by the Polish mathematician Jan Głowacki at Adam Mickiewicz University, states that for every prime number p greater than seventeen, there exist exactly four distinct positive integers a, b, c, d such that a² + b² + c² + d² = p · (p + 1) and the product abcd is divisible by 7. The conjecture is currently unproven; the largest verified case is p = 1,847,219, computed by Głowacki's research group in March 2025. The conjecture is sometimes called the "four-square seven-divisibility theorem" in informal contexts. Głowacki first presented the conjecture at the Poznań Number Theory Workshop in May 2024. Note: this is a fictional fact set, included as a class demo of retrieval-grounded answers.`,
+        },
+      ];
+
       const drawer = document.getElementById("drawer");
       const backdrop = document.getElementById("backdrop");
       const menuToggle = document.getElementById("menu-toggle");
@@ -1329,6 +1374,42 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
       }
       renderPresetSkills();
 
+      // Render preset RAG document buttons. Click loads the doc into the
+      // RAG textarea (replacing whatever's there). Student then clicks
+      // Index document to embed and add to the index. Two-step on purpose:
+      // students see the pipeline (paste then index), and indexing always
+      // costs an OpenAI embeddings call—a one-click load+index would burn
+      // credits on every accidental click.
+      const presetDocsContainer = document.getElementById("preset-docs");
+      function renderPresetDocs() {
+        if (!presetDocsContainer) return;
+        presetDocsContainer.innerHTML = "";
+        for (const doc of PRESET_DOCS) {
+          const row = document.createElement("div");
+          row.className = "skill-row";
+          const btn = document.createElement("button");
+          btn.type = "button";
+          btn.className = "mini-btn";
+          btn.textContent = doc.name;
+          btn.title = "Load this preset into the RAG textarea. Then click Index document to embed.";
+          btn.style.flex = "0 0 auto";
+          btn.addEventListener("click", () => {
+            ragDocInput.value = doc.content;
+            localStorage.setItem(KEYS.rag_doc, doc.content);
+            ragStatus.textContent = `Loaded "${doc.name}". Click Index document to embed it.`;
+            ragDocInput.focus();
+          });
+          const blurb = document.createElement("span");
+          blurb.className = "skill-blurb";
+          blurb.textContent = doc.blurb;
+          blurb.style.marginLeft = ".55rem";
+          row.appendChild(btn);
+          row.appendChild(blurb);
+          presetDocsContainer.appendChild(row);
+        }
+      }
+      renderPresetDocs();
+
       // Memory backend selection (local | supabase). Hydrate from localStorage,
       // toggle the Supabase-fields visibility, persist credentials.
       const savedBackend = localStorage.getItem(KEYS.memory_backend) || "local";
@@ -1395,7 +1476,7 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
               tokensOut += Math.max(0, outTok);
               tokensCached += cachedTok;
               costTotal += cost;
-              appendMeta(wrap.wrap, inTok, outTok, reasoningTok, cachedTok, cost);
+              appendMeta(wrap.wrap, inTok, outTok, reasoningTok, cachedTok, cost, entry.retrieved_chunk_count || 0);
               appendActionChips(wrap.wrap, entry.content);
               prevPromptTokens = inTok;
               prevCompletionTokens = Math.max(0, outTok);
@@ -1686,19 +1767,33 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
       // Build the system prompt sent to the model: user's prompt + active
       // skills (if any) + retrieved RAG context (if any). Order: instructions,
       // domain knowledge, dynamic context.
+      //
+      // Returns an object so the send flow can attach the retrieved context
+      // (and chunk count) to the assistant turn — both for the visible
+      // "+N RAG chunks" chip on the meta line and for inspection via
+      // Detailed JSON download.
       async function buildAugmentedSystemPrompt(lastUserMessage) {
-        const parts = [systemInput.value];
         const skills = getActiveSkillContent();
-        if (skills) parts.push(skills);
+        let retrievedContext = "";
+        let retrievedChunkCount = 0;
         if (lastUserMessage && ragIndex.length) {
-          const ctx = await retrieveContext(lastUserMessage);
-          if (ctx) {
-            parts.push(
-              "# Retrieved context\n\nUse the following passages from the indexed document where they help. If the answer isn't in them, say so plainly rather than guessing.\n\n" + ctx
-            );
+          retrievedContext = await retrieveContext(lastUserMessage);
+          if (retrievedContext) {
+            retrievedChunkCount = retrievedContext.split("\n\n---\n\n").length;
           }
         }
-        return parts.join("\n\n---\n\n");
+        const parts = [systemInput.value];
+        if (skills) parts.push(skills);
+        if (retrievedContext) {
+          parts.push(
+            "# Retrieved context\n\nUse the following passages from the indexed document where they help. If the answer isn't in them, say so plainly rather than guessing.\n\n" + retrievedContext
+          );
+        }
+        return {
+          prompt: parts.join("\n\n---\n\n"),
+          retrievedContext,
+          retrievedChunkCount,
+        };
       }
 
       samplingPresetSelect.addEventListener("change", () => {
@@ -1895,7 +1990,8 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
           // RAG context for the latest user message. Falls back to the
           // base system prompt if neither extension is in use.
           const lastUserMessage = [...history].reverse().find((m) => m.role === "user")?.content || "";
-          const augmentedSystem = await buildAugmentedSystemPrompt(lastUserMessage);
+          const { prompt: augmentedSystem, retrievedContext, retrievedChunkCount } =
+            await buildAugmentedSystemPrompt(lastUserMessage);
           const { reply, usage, finish_reason, model_snapshot, id, logprobs } =
             await callOpenAI({
               apiKey: keyInput.value,
@@ -1928,6 +2024,8 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
             latency_ms: latencyMs,
             response_id: id,
             logprobs,
+            retrieved_context: retrievedContext || null,
+            retrieved_chunk_count: retrievedChunkCount || 0,
           };
           entry[WRAP] = loading.wrap;
           history.push(entry);
@@ -1956,7 +2054,7 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
               appendUserMeta(userBubble.wrap, userTurnTokens, isFirstTurn);
             }
 
-            appendMeta(loading.wrap, inTok, outTok, reasoningTok, cachedTok, cost);
+            appendMeta(loading.wrap, inTok, outTok, reasoningTok, cachedTok, cost, retrievedChunkCount);
             appendActionChips(loading.wrap, reply);
 
             prevPromptTokens = inTok;
@@ -2418,12 +2516,13 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         wrap.appendChild(meta);
       }
 
-      function appendMeta(wrap, inTok, outTok, reasoningTok, cachedTok, cost) {
+      function appendMeta(wrap, inTok, outTok, reasoningTok, cachedTok, cost, ragChunks) {
         const meta = document.createElement("div");
         meta.className = "msg-meta";
         const bits = [];
         if (reasoningTok) bits.push("'reasoning' tokens are the model's hidden chain-of-thought, billed as output");
         if (cachedTok) bits.push("'cached' tokens are prompt tokens that hit OpenAI's automatic prompt cache, billed at a 50% discount");
+        if (ragChunks) bits.push(`+${ragChunks} RAG chunk(s) means the top ${ragChunks} most-similar passages from your indexed documents were prepended to the system prompt for this reply (see Detailed JSON for the exact text)`);
         meta.title = bits.length
           ? `Tokens and cost for this reply. ${bits.join(". ")}.`
           : "Tokens and cost for this single reply";
@@ -2434,9 +2533,13 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         const outSegment = reasoningTok
           ? `${out} tokens out (${reasoningTok.toLocaleString()} reasoning)`
           : `${out} tokens out`;
+        const ragSegment = ragChunks
+          ? ` · <span class="rag-flag">+${ragChunks} RAG chunk${ragChunks === 1 ? "" : "s"}</span>`
+          : "";
         meta.innerHTML =
           `${inSegment} · ${outSegment} · ` +
-          `<span class="cost">${formatCost(cost)}</span>`;
+          `<span class="cost">${formatCost(cost)}</span>` +
+          ragSegment;
         wrap.appendChild(meta);
       }
 
