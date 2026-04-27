@@ -10,8 +10,8 @@ A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot)
 
 - **Memory.** Tick *Remember conversation between sessions* in the Memory drawer. Pick a backend: **Local** writes the chat history JSON to `localStorage`; **Supabase** writes the same shape to a hosted Postgres `chat_memory` table. Same JSON either way; the storage backend is interchangeable.
 - **Skills.** Three preset skills with checkboxes—**Top-mark thesis** (sharp MA thesis advisor, Socratic questioning), **Tight summariser** (bullets only, never prose), **Stretch a deadline** (email structure for asking a professor for an extension)—plus a **Your skill (markdown)** textarea for your own. Every ticked skill is concatenated into the system prompt on every reply.
-- **RAG.** Paste a long document, click **Index document**, and ~500-character chunks are embedded via OpenAI's `text-embedding-3-small`. Index is **append-mode**: every Index click adds to the existing chunks (paste a second source, index again, both coexist). **Upload .txt / .md** for file input. **Clear index** wipes. Top-3 most similar chunks are prepended to the system prompt before each chat call.
-- **JSON proof of injection.** Drawer footer → **Simple JSON** or **Detailed JSON**. The downloaded file includes `system_prompt_assembled`—the actual string sent to the model with all active skills concatenated—plus `skills_active`, `custom_skill`, `memory_backend`, and `rag_chunks_indexed`. Open the file to see exactly what the model saw.
+- **RAG.** Two preset documents (Noam Chomsky's life and theory; the fictional Jabłoński-Żukowski Conjecture) plus a textarea for your own paste. Click **Index document** to chunk the textarea at ~500 characters and embed each via `text-embedding-3-small`. Index is **append-mode**—every click adds to the existing chunks. **Clear index** wipes. Top-3 most similar chunks are prepended to the system prompt before each chat call.
+- **JSON proof of injection.** Drawer footer → **Simple JSON** or **Detailed JSON**. Both include `system_prompt_assembled` (the system prompt with active skills concatenated), `skills_active`, `custom_skill`, `memory_backend`, and `rag_chunks_indexed`. Detailed JSON also captures `retrieved_context` and `retrieved_chunk_count` per assistant turn—so you can see exactly which RAG passages contributed to each reply. The same retrieval count appears as a `+N RAG chunks` chip on the meta line of every retrieval-augmented reply.
 
 ## 3. The argument: skills before RAG
 
@@ -25,7 +25,7 @@ Same pattern as Anthropic's Skills, OpenAI's Custom GPT knowledge files, Cursor'
 
 `index.html` is one file. Key functions in the `<script>` block:
 
-- `PRESET_SKILLS` — the three preset skill definitions, each `{id, name, blurb, content}`.
+- `PRESET_SKILLS` and `PRESET_DOCS` — the preset skill and RAG document definitions, each `{id, name, blurb, content}`.
 - `getActiveSkillContent()` — concatenates ticked presets + the custom textarea into one markdown blob.
 - `buildAugmentedSystemPrompt(lastUserMessage)` — assembles `[user prompt] + [active skills] + [retrieved RAG context]` with `---` separators. Called before every chat completion.
 - `embed(text)` — POSTs `/v1/embeddings`, returns a 1,536-dim vector.
