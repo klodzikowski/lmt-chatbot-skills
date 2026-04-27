@@ -978,12 +978,12 @@ Preset use cases (temperature · top-p):
               </div>
               <textarea id="rag-doc" spellcheck="false" placeholder="Paste text here, then click Index. Add more documents by pasting again and indexing—they accumulate."></textarea>
               <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;">
-                <button type="button" id="rag-index" class="mini-btn">Index document</button>
-                <label class="mini-btn" style="cursor:pointer;display:inline-flex;align-items:center;">
+                <label class="mini-btn" style="cursor:pointer;display:inline-flex;align-items:center;" title="Read a .txt or .md file into the textarea so you can index it.">
                   Upload .txt / .md
                   <input type="file" id="rag-file" accept=".txt,.md,text/plain,text/markdown" style="display:none;" />
                 </label>
-                <button type="button" id="rag-clear" class="mini-btn">Clear index</button>
+                <button type="button" id="rag-index" class="mini-btn" title="Chunk the textarea content into ~500-character pieces, embed each via OpenAI's text-embedding-3-small, and append to the index. Cumulative — paste another doc and click again to add more.">Index document</button>
+                <button type="button" id="rag-clear" class="mini-btn" title="Wipe the indexed chunks from memory and from localStorage. The textarea is unaffected.">Clear index</button>
               </div>
               <p class="field-note" id="rag-status">No documents indexed.</p>
             </div>
