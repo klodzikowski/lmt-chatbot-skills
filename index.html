@@ -994,8 +994,8 @@ Preset use cases (temperature · top-p):
       <div class="drawer-footer">
         <button type="button" id="download-simple" disabled title="Transcript only—role, content, model, system prompt">Simple JSON</button>
         <button type="button" id="download-detailed" disabled title="Everything—per-turn usage, finish reasons, latency, logprobs">Detailed JSON</button>
-        <button type="button" id="clear" disabled title="Clear conversation in this browser. Cloud-stored rows (Supabase) stay—reload to bring them back.">Clear chat</button>
-        <button type="button" id="reset-all" class="danger">Reset all</button>
+        <button type="button" id="clear" disabled title="Clear the conversation off the screen. Storage stays untouched (localStorage and any Supabase rows). Reload to bring the chat back.">Clear chat</button>
+        <button type="button" id="reset-all" class="danger" title="Wipe everything: chat, settings, API key, skill state, RAG index, localStorage history, AND the Supabase rows for this user. Clean slate.">Reset all</button>
       </div>
     </aside>
 
@@ -2090,7 +2090,7 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
 
       clearBtn.addEventListener("click", () => {
         if (!history.length) return;
-        if (!confirm("Clear the conversation in this browser? Cloud rows in Supabase (if any) stay — reload to bring them back. Use Reset all to wipe both.")) return;
+        if (!confirm("Clear the conversation off the screen? Storage stays untouched—reload to bring it back. Use Reset all to wipe storage too.")) return;
         history.length = 0;
         tokensIn = 0;
         tokensOut = 0;
@@ -2098,11 +2098,11 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         costTotal = 0;
         prevPromptTokens = 0;
         prevCompletionTokens = 0;
-        // Clear persisted history on the browser side only. Supabase rows
-        // (when that's the active backend) are intentionally left alone so
-        // a reload re-hydrates the conversation from the cloud — that's
-        // the persistence demo. Reset all wipes both.
-        localStorage.removeItem(KEYS.history);
+        // Clear chat is screen-only by design. Neither localStorage nor
+        // Supabase rows are touched. Reload re-hydrates from whichever
+        // backend is active, so students can demonstrate "the data is
+        // still in storage; the screen was just emptied." Reset all is
+        // the button that actually wipes storage.
         renderHero();
         refreshToolbar();
       });
