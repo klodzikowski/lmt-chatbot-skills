@@ -1,47 +1,33 @@
 # LMT Chatbot — Skills edition
 
-A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot). Same single HTML file. Adds persistent memory, a Summarise button, a markdown skill, and minimal RAG on top of the Class 19 baseline.
+A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot). Adds memory, summarise, a markdown skill, and minimal RAG. Same single HTML file, no build step.
 
-## Try it
+## 1. Try it
 
 [klodzikowski.github.io/lmt-chatbot-skills](https://klodzikowski.github.io/lmt-chatbot-skills/). Paste your OpenAI key into the drawer.
 
-## What's added
+## 2. What's added
 
-1. **Persistent memory.** A toggle in the drawer keeps the chat across reloads via `localStorage`. Class 20 covers a Supabase upgrade as a stretch — same JSON shape, hosted Postgres instead of the browser.
-2. **Summarise.** A button in the drawer footer. Compresses the running chat into a markdown summary and appends it as an assistant message.
-3. **Markdown skill.** A textarea for a persona, a style guide, a syllabus chapter—any markdown. Prepended to the system prompt on every call.
-4. **Minimal RAG.** A second textarea for a long document. The "Index" button chunks it into ~500-character pieces and embeds each via OpenAI's `text-embedding-3-small`. Top-3 most similar chunks land in the system prompt before each chat.
+- **Memory.** A toggle in the drawer keeps the chat across reloads via `localStorage`.
+- **Summarise.** A drawer-footer button compresses the chat into a markdown summary.
+- **Skill.** A textarea for a markdown skill: a persona, a style guide, a syllabus chapter. Prepended to the system prompt every call.
+- **RAG.** A second textarea for a long document. The Index button chunks at ~500 chars and embeds each via `text-embedding-3-small`. Top-3 chunks land in the system prompt before each chat.
 
-## The argument
+## 3. Skills before RAG
 
-Try a markdown skill before reaching for RAG. Modern context windows fit hundreds of pages of markdown—deterministic, version-controllable, no retrieval failures. RAG is the heavy hammer for cases where skills won't fit: huge corpora, frequently changing content. Skills win when someone owns the knowledge; RAG wins when the knowledge already exists and nobody's curating it.
+Modern context windows fit hundreds of pages of markdown. Try a skill before reaching for RAG. Skills are deterministic, version-controllable, no retrieval failures. RAG is the heavy hammer for huge corpora or content changing faster than you can edit a file. Skills win when someone owns the knowledge; RAG wins when nobody's curating it.
 
-Same pattern as Anthropic's Skills, OpenAI's Custom GPT knowledge files, and Cursor's Rules. Different branding, same shape.
+Same shape as Anthropic's Skills, OpenAI's Custom GPT knowledge files, Cursor's Rules.
 
-## How it works
+## 4. Source map
 
 `index.html` is one file. Key functions in the `<script>` block:
 
-- `summariseConversation()`: chat API call with a "summarise as markdown" system prompt.
-- `embed(text)`: POSTs to `/v1/embeddings`, returns a 1,536-dimensional vector.
-- `cosineSim(a, b)`: pure JS, no dependencies.
-- `indexDocument()`: chunks the textarea, embeds each chunk, stores `{text, embedding}` per chunk.
-- `retrieveContext(query, k)`: embeds the query, cosine-sorts, returns top-k chunks.
-- `buildAugmentedSystemPrompt(lastUserMessage)`: assembles `[user prompt] + [skill] + [retrieved context]`.
+- `summariseConversation()`: chat call with a summarise system prompt.
+- `embed(text)`: POSTs `/v1/embeddings`, returns a 1,536-dim vector.
+- `cosineSim(a, b)`: pure JS, no deps.
+- `indexDocument()`: chunks the textarea, embeds each, stores `{text, embedding}` per chunk.
+- `retrieveContext(query, k)`: embeds the query, cosine-sorts, returns top-k.
+- `buildAugmentedSystemPrompt(...)`: assembles `[user prompt] + [skill] + [retrieved context]`.
 
-Storage keys are namespaced `lmt-chatbot-skills-*` to avoid colliding with the canonical `lmt-chatbot` on the same origin.
-
-## Class context
-
-In-class reference for Class 20 of the 2 MA LMT _Artificial Intelligence_ course at Adam Mickiewicz University. Class 20 covers all three layers in one 60-min slot: Part 1 — Memory; Part 2 — Skills; Part 3 — RAG. Class 21 picks up Agent Lab on top.
-
-## Licence
-
-MIT. Take it, fork it, ship your own.
-
-## Lineage
-
-- Forked from [`klodzikowski/lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot) (Apache 2.0). Relicensed MIT.
-- Companion consumer demo: [`klodzikowski/dad_jokes`](https://github.com/klodzikowski/dad_jokes).
-- Topic tag: `lmt-ai-course`.
+Storage keys namespaced `lmt-chatbot-skills-*` to avoid colliding with `lmt-chatbot` on the same origin.
