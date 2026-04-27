@@ -10,6 +10,7 @@
     />
     <script src="https://cdn.jsdelivr.net/npm/marked@15/marked.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/dompurify@3/dist/purify.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
       :root {
         color-scheme: dark;
@@ -738,6 +739,76 @@
         color: #fecaca;
       }
       .drawer-footer .danger:hover:not(:disabled) { background: #3f0e0e; }
+
+      /* Collapsible drawer sections (Settings / Memory / Skills). */
+      .drawer-section {
+        border: 1px solid var(--border-strong);
+        border-radius: 10px;
+        margin: .9rem 0;
+        background: var(--surface);
+        overflow: hidden;
+      }
+      .drawer-section > summary {
+        padding: .65rem .85rem;
+        cursor: pointer;
+        font-weight: 600;
+        font-size: .82rem;
+        list-style: none;
+        user-select: none;
+        display: flex;
+        align-items: center;
+        gap: .55rem;
+        color: var(--fg);
+      }
+      .drawer-section > summary::-webkit-details-marker { display: none; }
+      .drawer-section > summary::before {
+        content: "›";
+        display: inline-block;
+        transition: transform .15s ease;
+        font-size: 1.05rem;
+        width: .8rem;
+        color: var(--muted);
+      }
+      .drawer-section[open] > summary::before { transform: rotate(90deg); }
+      .drawer-section-body {
+        padding: .25rem .85rem .8rem;
+        border-top: 1px solid var(--border);
+      }
+      .drawer-section-body .field:first-child { margin-top: .65rem; }
+
+      /* Skills section: preset checkboxes with hover-to-see-content tooltips. */
+      .skill-row {
+        display: flex;
+        align-items: flex-start;
+        gap: .55rem;
+        padding: .35rem 0;
+      }
+      .skill-row input[type="checkbox"] { margin-top: .15rem; flex: 0 0 auto; }
+      .skill-row label { font-size: .85rem; cursor: pointer; line-height: 1.35; }
+      .skill-row .skill-name { font-weight: 600; }
+      .skill-row .skill-blurb {
+        display: block;
+        font-weight: 400;
+        font-size: .76rem;
+        color: var(--muted);
+        margin-top: .15rem;
+      }
+
+      /* Memory backend radio. */
+      .backend-radios {
+        display: flex;
+        gap: 1rem;
+        padding: .45rem 0 .15rem;
+      }
+      .backend-radios label {
+        font-size: .85rem;
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        cursor: pointer;
+      }
+      .supabase-fields { display: none; padding-top: .35rem; }
+      .supabase-fields.visible { display: block; }
     </style>
   </head>
   <body>
@@ -749,68 +820,50 @@
         <button class="drawer-close" id="drawer-close" aria-label="Close settings">×</button>
       </div>
       <div class="drawer-body">
-        <div class="field">
-          <div class="field-header">
-            <label for="key">OpenAI API key<button type="button" class="help-tip" data-help="Stored in your browser session only. Sent directly to api.openai.com, nowhere else." aria-label="About the API key">?</button></label>
-            <a class="get-key" href="https://platform.openai.com/account/api-keys"
-              target="_blank" rel="noopener">Get a key</a>
-          </div>
-          <input id="key" type="password" placeholder="sk-..." autocomplete="off" />
-        </div>
+        <details class="drawer-section" open>
+          <summary>Settings</summary>
+          <div class="drawer-section-body">
+            <div class="field">
+              <div class="field-header">
+                <label for="key">OpenAI API key<button type="button" class="help-tip" data-help="Stored in your browser session only. Sent directly to api.openai.com, nowhere else." aria-label="About the API key">?</button></label>
+                <a class="get-key" href="https://platform.openai.com/account/api-keys"
+                  target="_blank" rel="noopener">Get a key</a>
+              </div>
+              <input id="key" type="password" placeholder="sk-..." autocomplete="off" />
+            </div>
 
-        <div class="field">
-          <div class="field-header">
-            <label for="model">Model<button type="button" class="help-tip" data-help="Newest first. Small, fast variants only (nano / mini / turbo) — free-tier friendly. If your key rejects a newer model, step down a generation." aria-label="About model choice">?</button></label>
-          </div>
-          <select id="model">
-            <option value="gpt-5-nano">gpt-5-nano · 2026 · $0.05 in / $0.40 out · locked sampling</option>
-            <option value="gpt-4.1-nano">gpt-4.1-nano · 2025 · $0.10 in / $0.40 out</option>
-            <option value="gpt-4o-mini">gpt-4o-mini · 2024 · $0.15 in / $0.60 out</option>
-            <option value="gpt-3.5-turbo">gpt-3.5-turbo · 2023 · $0.50 in / $1.50 out</option>
-          </select>
-        </div>
+            <div class="field">
+              <div class="field-header">
+                <label for="model">Model<button type="button" class="help-tip" data-help="Newest first. Small, fast variants only (nano / mini / turbo) — free-tier friendly. If your key rejects a newer model, step down a generation." aria-label="About model choice">?</button></label>
+              </div>
+              <select id="model">
+                <option value="gpt-5-nano">gpt-5-nano · 2026 · $0.05 in / $0.40 out · locked sampling</option>
+                <option value="gpt-4.1-nano">gpt-4.1-nano · 2025 · $0.10 in / $0.40 out</option>
+                <option value="gpt-4o-mini">gpt-4o-mini · 2024 · $0.15 in / $0.60 out</option>
+                <option value="gpt-3.5-turbo">gpt-3.5-turbo · 2023 · $0.50 in / $1.50 out</option>
+              </select>
+            </div>
 
-        <div class="field">
-          <div class="field-header">
-            <label for="system">System prompt<button type="button" class="help-tip" data-help="The invisible first message that steers every reply. Change this and the bot becomes a different bot." aria-label="About the system prompt">?</button></label>
-            <button type="button" class="mini-btn" id="reset-system">Reset</button>
-          </div>
-          <select id="preset" class="preset-select" aria-label="Preset prompts">
-            <option value="">Load a preset…</option>
-            <option value="personal-assistant">Personal assistant</option>
-            <option value="dad-jokes">Dad jokes</option>
-            <option value="chatgpt">ChatGPT-style</option>
-            <option value="claude">Claude-style</option>
-            <option value="grok">Grok-style</option>
-          </select>
-          <p class="field-note">Branded presets are caricatures of each product's public vibe, not their real system prompts (which aren't public).</p>
-          <textarea id="system" spellcheck="false"></textarea>
-        </div>
+            <div class="field">
+              <div class="field-header">
+                <label for="system">System prompt<button type="button" class="help-tip" data-help="The invisible first message that steers every reply. Change this and the bot becomes a different bot." aria-label="About the system prompt">?</button></label>
+                <button type="button" class="mini-btn" id="reset-system">Reset</button>
+              </div>
+              <select id="preset" class="preset-select" aria-label="Preset prompts">
+                <option value="">Load a preset…</option>
+                <option value="personal-assistant">Personal assistant</option>
+                <option value="dad-jokes">Dad jokes</option>
+                <option value="chatgpt">ChatGPT-style</option>
+                <option value="claude">Claude-style</option>
+                <option value="grok">Grok-style</option>
+              </select>
+              <p class="field-note">Branded presets are caricatures of each product's public vibe, not their real system prompts (which aren't public).</p>
+              <textarea id="system" spellcheck="false"></textarea>
+            </div>
 
-        <div class="field">
-          <div class="field-header">
-            <label for="skill">Skill (markdown)<button type="button" class="help-tip wide" data-help="Paste a markdown skill file here — domain knowledge, persona, instructions. Prepended to the system prompt on every API call.
-
-Skills are the lightweight alternative to RAG. Modern context windows (400k–1M tokens) easily fit hundreds of pages of markdown. For most 'I want my bot to know about X' use cases, a skill file beats retrieval — deterministic, version-controllable, no retrieval-failure modes." aria-label="About markdown skills">?</button></label>
-          </div>
-          <textarea id="skill" spellcheck="false" placeholder="# Example: a skill file for an LMT thesis coach&#10;&#10;You are advising MA students in Linguistics, Mind &amp; Technology…"></textarea>
-          <p class="field-note">Try Claude Skills / Custom GPT knowledge files in the same shape — markdown directly in context, no RAG needed.</p>
-        </div>
-
-        <div class="field">
-          <div class="field-header">
-            <label for="rag-doc">RAG document<button type="button" class="help-tip wide" data-help="When skills aren't enough — a corpus too big to fit in the context window, or content that changes faster than you can edit a markdown file — paste a long document here and click Index. The text is chunked, embedded via OpenAI's text-embedding-3-small, and the top-3 most similar chunks are prepended to your system prompt before each chat call.
-
-Skills first, RAG when skills run out. That ordering is the headline of this fork." aria-label="About RAG">?</button></label>
-          </div>
-          <textarea id="rag-doc" spellcheck="false" placeholder="Paste a long document — Wikipedia article, syllabus, a chapter of your thesis…"></textarea>
-          <button type="button" id="rag-index" class="mini-btn" style="margin-top:.4rem;">Index document</button>
-          <p class="field-note" id="rag-status">No document indexed.</p>
-        </div>
-
-        <div class="section-heading">
-          Sampling
-          <button type="button" class="help-tip wide" data-help="Temperature and top-p both control how random the reply is, but in different ways. Best practice: change one at a time so you can tell which knob caused a shift.
+            <div class="section-heading">
+              Sampling
+              <button type="button" class="help-tip wide" data-help="Temperature and top-p both control how random the reply is, but in different ways. Best practice: change one at a time so you can tell which knob caused a shift.
 
 Preset use cases (temperature · top-p):
 • 0.0 · 1.0 — Reproducible: same reply for everyone (uses a fixed seed)
@@ -819,64 +872,125 @@ Preset use cases (temperature · top-p):
 • 1.3 · 0.5 — Creative writing: novel but coherent
 • 1.3 · 1.0 — Brainstorming: wild, diverse
 • 2.0 · 0.3 — Chaos: both extremes, watch it break" aria-label="About sampling">?</button>
-        </div>
+            </div>
 
-        <select id="sampling-preset" class="preset-select" aria-label="Sampling presets">
-          <option value="">Preset use case…</option>
-          <option value="reproducible">temp 0.0 · top-p 1.0 · Reproducible — same output for everyone</option>
-          <option value="deterministic">temp 0.2 · top-p 0.2 · Email — predictable, focused</option>
-          <option value="translation">temp 0.2 · top-p 1.0 · Translation — faithful, varied vocab</option>
-          <option value="creative">temp 1.3 · top-p 0.5 · Creative writing — novel but coherent</option>
-          <option value="brainstorming">temp 1.3 · top-p 1.0 · Brainstorming — wild, diverse</option>
-          <option value="chaos">temp 2.0 · top-p 0.3 · Chaos — watch it break</option>
-        </select>
+            <select id="sampling-preset" class="preset-select" aria-label="Sampling presets">
+              <option value="">Preset use case…</option>
+              <option value="reproducible">temp 0.0 · top-p 1.0 · Reproducible — same output for everyone</option>
+              <option value="deterministic">temp 0.2 · top-p 0.2 · Email — predictable, focused</option>
+              <option value="translation">temp 0.2 · top-p 1.0 · Translation — faithful, varied vocab</option>
+              <option value="creative">temp 1.3 · top-p 0.5 · Creative writing — novel but coherent</option>
+              <option value="brainstorming">temp 1.3 · top-p 1.0 · Brainstorming — wild, diverse</option>
+              <option value="chaos">temp 2.0 · top-p 0.3 · Chaos — watch it break</option>
+            </select>
 
-        <div class="field sampling">
-          <div class="field-header">
-            <label for="temp">Temperature<button type="button" class="help-tip" data-help="How flat the probability distribution is. Low = sticks to the most likely token (like 'car'); high = less probable tokens (like 'elephant') get a chance. 0.7–0.9 is the sweet spot." aria-label="About temperature">?</button></label>
-            <span class="value" id="temp-value">0.8</span>
+            <div class="field sampling">
+              <div class="field-header">
+                <label for="temp">Temperature<button type="button" class="help-tip" data-help="How flat the probability distribution is. Low = sticks to the most likely token (like 'car'); high = less probable tokens (like 'elephant') get a chance. 0.7–0.9 is the sweet spot." aria-label="About temperature">?</button></label>
+                <span class="value" id="temp-value">0.8</span>
+              </div>
+              <input type="range" id="temp" min="0" max="2" step="0.1" value="0.8" />
+            </div>
+
+            <div class="field sampling">
+              <div class="field-header">
+                <label for="topp">Top-p<button type="button" class="help-tip" data-help="Size of the candidate pool, by cumulative probability. 1.0 = every token in play; 0.1 = only the few most likely. Generally tune this or temperature, not both." aria-label="About top-p">?</button></label>
+                <span class="value" id="topp-value">1.00</span>
+              </div>
+              <input type="range" id="topp" min="0.1" max="1" step="0.05" value="1" />
+            </div>
+
+            <div class="locked-note" id="sampling-locked-note">
+              This model locks temperature and top-p to the default (1.0). Pick an older model to experiment with sampling.
+            </div>
+
+            <div class="field checkbox-field">
+              <input type="checkbox" id="show-logprobs" />
+              <label for="show-logprobs">Show token probabilities</label>
+              <button type="button" class="help-tip" data-help="Render each reply token as a coloured chip based on how confident the model was (green = certain, red = uncertain). Click a chip to see the top-5 alternatives. Not supported by reasoning models like gpt-5-nano." aria-label="About token probabilities">?</button>
+            </div>
+            <div class="locked-note" id="logprobs-locked-note">
+              Token probabilities aren't returned by reasoning models (gpt-5 family). The reply will render as normal markdown until you switch to an older model.
+            </div>
+
+            <div class="field">
+              <div class="field-header">
+                <label for="maxtok">Max tokens<button type="button" class="help-tip" data-help="Hard cap on reply length. Roughly 1 token ≈ 0.75 words. Higher values allow longer replies but cost more per message." aria-label="About max tokens">?</button></label>
+                <span class="value" id="maxtok-value">1024</span>
+              </div>
+              <input type="range" id="maxtok" min="64" max="4096" step="64" value="1024" />
+            </div>
           </div>
-          <input type="range" id="temp" min="0" max="2" step="0.1" value="0.8" />
-        </div>
+        </details>
 
-        <div class="field sampling">
-          <div class="field-header">
-            <label for="topp">Top-p<button type="button" class="help-tip" data-help="Size of the candidate pool, by cumulative probability. 1.0 = every token in play; 0.1 = only the few most likely. Generally tune this or temperature, not both." aria-label="About top-p">?</button></label>
-            <span class="value" id="topp-value">1.00</span>
+        <details class="drawer-section">
+          <summary>Memory</summary>
+          <div class="drawer-section-body">
+            <div class="field checkbox-field">
+              <input type="checkbox" id="remember-conversation" />
+              <label for="remember-conversation">Remember conversation between sessions</label>
+              <button type="button" class="help-tip" data-help="When on, the conversation survives page reloads and tab close. Pick a backend below: Local stays in this browser via localStorage; Supabase persists to a hosted Postgres database you can reach from any device." aria-label="About persistent memory">?</button>
+            </div>
+            <div class="backend-radios" id="memory-backend-radios">
+              <label><input type="radio" name="memory-backend" value="local" checked /> Local (this browser)</label>
+              <label><input type="radio" name="memory-backend" value="supabase" /> Supabase (cross-device)</label>
+            </div>
+            <div class="supabase-fields" id="supabase-fields">
+              <div class="field">
+                <div class="field-header">
+                  <label for="supabase-url">Supabase project URL</label>
+                </div>
+                <input id="supabase-url" type="text" placeholder="https://xxxx.supabase.co" autocomplete="off" />
+              </div>
+              <div class="field">
+                <div class="field-header">
+                  <label for="supabase-key">Supabase anon key<button type="button" class="help-tip" data-help="The public anon key from Settings → API in the Supabase dashboard. Safe to put in client code; access is gated by Row Level Security policies on the table." aria-label="About the anon key">?</button></label>
+                </div>
+                <input id="supabase-key" type="password" placeholder="eyJ..." autocomplete="off" />
+              </div>
+              <p class="field-note" id="supabase-status">Add URL + anon key, then send a message to test.</p>
+            </div>
           </div>
-          <input type="range" id="topp" min="0.1" max="1" step="0.05" value="1" />
-        </div>
+        </details>
 
-        <div class="locked-note" id="sampling-locked-note">
-          This model locks temperature and top-p to the default (1.0). Pick an older model to experiment with sampling.
-        </div>
-
-        <div class="field checkbox-field">
-          <input type="checkbox" id="show-logprobs" />
-          <label for="show-logprobs">Show token probabilities</label>
-          <button type="button" class="help-tip" data-help="Render each reply token as a coloured chip based on how confident the model was (green = certain, red = uncertain). Click a chip to see the top-5 alternatives. Not supported by reasoning models like gpt-5-nano." aria-label="About token probabilities">?</button>
-        </div>
-        <div class="locked-note" id="logprobs-locked-note">
-          Token probabilities aren't returned by reasoning models (gpt-5 family). The reply will render as normal markdown until you switch to an older model.
-        </div>
-
-        <div class="field">
-          <div class="field-header">
-            <label for="maxtok">Max tokens<button type="button" class="help-tip" data-help="Hard cap on reply length. Roughly 1 token ≈ 0.75 words. Higher values allow longer replies but cost more per message." aria-label="About max tokens">?</button></label>
-            <span class="value" id="maxtok-value">1024</span>
+        <details class="drawer-section">
+          <summary>Skills</summary>
+          <div class="drawer-section-body">
+            <p class="field-note" style="margin-top:.55rem">Tick one or more skills. Each ticked skill is concatenated into the system prompt on every reply — visible in the Download JSON output.</p>
+            <div id="preset-skills"></div>
+            <div class="field">
+              <div class="field-header">
+                <label for="skill">Your skill (markdown)<button type="button" class="help-tip wide" data-help="Add your own skill in markdown. Prepended to the system prompt alongside any ticked presets. Same shape as Anthropic's Skills, OpenAI's Custom GPT knowledge files, Cursor's Rules." aria-label="About custom skills">?</button></label>
+              </div>
+              <textarea id="skill" spellcheck="false" placeholder="# A skill of your own&#10;&#10;Write a few rules, a persona, or a checklist…"></textarea>
+            </div>
           </div>
-          <input type="range" id="maxtok" min="64" max="4096" step="64" value="1024" />
-        </div>
+        </details>
 
-        <div class="field checkbox-field">
-          <input type="checkbox" id="remember-conversation" />
-          <label for="remember-conversation">Remember conversation between sessions</label>
-          <button type="button" class="help-tip" data-help="When on, the conversation persists in this browser via localStorage. Reload the page or close the tab and your messages come back. Off by default — same as a regular chat window. Cleared when you Clear chat or Reset all." aria-label="About persistent memory">?</button>
-        </div>
+        <details class="drawer-section">
+          <summary>RAG</summary>
+          <div class="drawer-section-body">
+            <p class="field-note" style="margin-top:.55rem">When a skill file isn't enough — too big, or you want retrieval to pick relevant chunks per query — paste a long document and click Index. Top-3 most similar chunks are prepended to the system prompt before each chat call.</p>
+            <div class="field">
+              <div class="field-header">
+                <label for="rag-doc">RAG document<button type="button" class="help-tip wide" data-help="Paste a long document — Wikipedia article, syllabus, a chapter of your thesis. The Index button chunks it into ~500-character pieces and embeds each via OpenAI's text-embedding-3-small. Top-3 most similar chunks are prepended to your system prompt before each chat call." aria-label="About RAG">?</button></label>
+              </div>
+              <textarea id="rag-doc" spellcheck="false" placeholder="Paste text here, then click Index. Add more documents by pasting again and indexing — they accumulate."></textarea>
+              <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;">
+                <button type="button" id="rag-index" class="mini-btn">Index document</button>
+                <label class="mini-btn" style="cursor:pointer;display:inline-flex;align-items:center;">
+                  Upload .txt / .md
+                  <input type="file" id="rag-file" accept=".txt,.md,text/plain,text/markdown" style="display:none;" />
+                </label>
+                <button type="button" id="rag-clear" class="mini-btn">Clear index</button>
+              </div>
+              <p class="field-note" id="rag-status">No documents indexed.</p>
+            </div>
+          </div>
+        </details>
       </div>
       <div class="drawer-resize" id="drawer-resize" aria-label="Resize sidebar" role="separator" aria-orientation="vertical"></div>
       <div class="drawer-footer">
-        <button type="button" id="summarise" disabled title="Summarise the conversation as markdown">Summarise</button>
         <button type="button" id="download-simple" disabled title="Transcript only — role, content, model, system prompt">Simple JSON</button>
         <button type="button" id="download-detailed" disabled title="Everything — per-turn usage, finish reasons, latency, logprobs">Detailed JSON</button>
         <button type="button" id="clear" disabled>Clear chat</button>
@@ -1055,9 +1169,57 @@ Preset use cases (temperature · top-p):
         history: "lmt-chatbot-skills-history",
         // Skills-edition extras:
         skill: "lmt-chatbot-skills-skill",
+        skill_active_prefix: "lmt-chatbot-skills-skill-active-",
         rag_doc: "lmt-chatbot-skills-rag-doc",
         rag_index: "lmt-chatbot-skills-rag-index",
+        // Memory backend selection + Supabase credentials:
+        memory_backend: "lmt-chatbot-skills-memory-backend",
+        supabase_url: "lmt-chatbot-skills-supabase-url",
+        supabase_key: "lmt-chatbot-skills-supabase-key",
       };
+
+      // Preset skills shipped with the fork. Tick one or more to inject into
+      // the system prompt. Students can add their own skill in the textarea
+      // below. Shape: { id, name, blurb (one-liner shown next to checkbox),
+      // content (the markdown that gets injected) }.
+      const PRESET_SKILLS = [
+        {
+          id: "thesis",
+          name: "Top-mark thesis",
+          blurb: "Sharp MA thesis advisor — Socratic questions, no draft-writing.",
+          content: `You're a sharp MA thesis advisor. Your job is to help the student score the highest possible mark.
+
+Open every reply with one Socratic question that exposes the weakest part of their current draft — vague claims, untestable hypotheses, missing methodology, or a literature review that summarises every paper instead of naming three or four tensions in the field.
+
+Be direct about what examiners actually look for: a defensible thesis statement in the first paragraph, methodology that ties to the research question, results presented before interpretation, and references to the supervisor's own work where genuinely relevant — that's not flattery, that's signal you've done the reading.
+
+Reject vague verbs like "explore" or "examine." Demand specifics. Never write the draft for the student.`,
+        },
+        {
+          id: "charm",
+          name: "Charm a room",
+          blurb: "Honest social mechanics — no creepy hacks.",
+          content: `You're a frank charm coach. The user wants people to like them more — at networking events, in seminars, at parties — without coming across as smarmy.
+
+Lead every reply with one of three moves: ask a specific question (about the other person's recent work, a decision they made, a struggle they're working through); remember and use names (if you forget, say so cheerfully and ask again — never bluff); match tempo (speed of speech, formality, level of detail).
+
+Avoid charm hacks. The "say their name three times" trick reads creepy. Mirroring postures looks like surveillance. The win is genuine attention, not a script.
+
+Compliment specifics — a choice they made, a question they asked — never looks.`,
+        },
+        {
+          id: "deadline",
+          name: "Stretch a deadline",
+          blurb: "Email structure for asking professors for an extension.",
+          content: `You help students negotiate deadline extensions without burning bridges with their professors.
+
+Email structure: subject line states the request directly ("Extension request: [assignment], [course]"). First sentence proposes the new deadline — not an apology. Second sentence: a specific, brief reason (illness, conflicting deadline, scope mismatch you've discovered). Third sentence: what you've already done so the professor sees momentum.
+
+Never blame the syllabus or the assignment design. Never cc the department head on the first ask. Don't ask twice in one term unless the situation is genuinely new.
+
+If the answer is no, accept cleanly: "Thanks — I'll have it in by [original deadline] then." Don't argue.`,
+        },
+      ];
 
       const drawer = document.getElementById("drawer");
       const backdrop = document.getElementById("backdrop");
@@ -1081,10 +1243,17 @@ Preset use cases (temperature · top-p):
       const resizeHandle = document.getElementById("drawer-resize");
       // Skills-edition refs:
       const skillInput = document.getElementById("skill");
+      const presetSkillsContainer = document.getElementById("preset-skills");
       const ragDocInput = document.getElementById("rag-doc");
       const ragIndexBtn = document.getElementById("rag-index");
+      const ragClearBtn = document.getElementById("rag-clear");
+      const ragFileInput = document.getElementById("rag-file");
       const ragStatus = document.getElementById("rag-status");
-      const summariseBtn = document.getElementById("summarise");
+      const memoryBackendRadios = document.querySelectorAll('input[name="memory-backend"]');
+      const supabaseFields = document.getElementById("supabase-fields");
+      const supabaseUrlInput = document.getElementById("supabase-url");
+      const supabaseKeyInput = document.getElementById("supabase-key");
+      const supabaseStatus = document.getElementById("supabase-status");
 
       const chatEl = document.getElementById("chat");
       const placeholder = document.getElementById("placeholder");
@@ -1132,22 +1301,82 @@ Preset use cases (temperature · top-p):
       ragDocInput.value = localStorage.getItem(KEYS.rag_doc) || "";
       ragStatus.textContent = ragIndex.length
         ? `${ragIndex.length} chunks indexed.`
-        : "No document indexed.";
+        : "No documents indexed.";
+
+      // Render preset skill checkboxes from PRESET_SKILLS. Each checkbox
+      // persists its checked state in localStorage so refresh preserves the
+      // active skills.
+      function renderPresetSkills() {
+        if (!presetSkillsContainer) return;
+        presetSkillsContainer.innerHTML = "";
+        for (const skill of PRESET_SKILLS) {
+          const row = document.createElement("div");
+          row.className = "skill-row";
+          const id = `skill-preset-${skill.id}`;
+          const cb = document.createElement("input");
+          cb.type = "checkbox";
+          cb.id = id;
+          cb.checked = localStorage.getItem(KEYS.skill_active_prefix + skill.id) === "1";
+          cb.addEventListener("change", () => {
+            if (cb.checked) localStorage.setItem(KEYS.skill_active_prefix + skill.id, "1");
+            else localStorage.removeItem(KEYS.skill_active_prefix + skill.id);
+          });
+          const label = document.createElement("label");
+          label.htmlFor = id;
+          label.innerHTML = `<span class="skill-name">${skill.name}</span><span class="skill-blurb">${skill.blurb}</span>`;
+          row.appendChild(cb);
+          row.appendChild(label);
+          presetSkillsContainer.appendChild(row);
+        }
+      }
+      renderPresetSkills();
+
+      // Memory backend selection (local | supabase). Hydrate from localStorage,
+      // toggle the Supabase-fields visibility, persist credentials.
+      const savedBackend = localStorage.getItem(KEYS.memory_backend) || "local";
+      for (const r of memoryBackendRadios) r.checked = (r.value === savedBackend);
+      supabaseUrlInput.value = localStorage.getItem(KEYS.supabase_url) || "";
+      supabaseKeyInput.value = localStorage.getItem(KEYS.supabase_key) || "";
+      function syncSupabaseFieldsVisibility() {
+        const backend = getMemoryBackend();
+        supabaseFields.classList.toggle("visible", backend === "supabase");
+      }
+      function getMemoryBackend() {
+        for (const r of memoryBackendRadios) if (r.checked) return r.value;
+        return "local";
+      }
+      syncSupabaseFieldsVisibility();
+
+      // Supabase client, lazily created when both URL and key are present.
+      let supabase = null;
+      function getSupabaseClient() {
+        const url = supabaseUrlInput.value.trim();
+        const key = supabaseKeyInput.value.trim();
+        if (!url || !key) return null;
+        if (!supabase || supabase.__url !== url || supabase.__key !== key) {
+          try {
+            supabase = window.supabase.createClient(url, key);
+            supabase.__url = url;
+            supabase.__key = key;
+          } catch (err) {
+            supabase = null;
+            console.error("Supabase init failed:", err);
+          }
+        }
+        return supabase;
+      }
+
       renderSliderValues();
 
       // Hydrate the conversation from localStorage if remember-conversation
       // is on. Re-renders bubbles, restores totals, re-attaches WRAP refs so
       // regenerate still works on hydrated turns.
-      function hydrateConversationFromStorage() {
-        if (!rememberConversationInput.checked) return;
-        let stored;
-        try { stored = JSON.parse(localStorage.getItem(KEYS.history) || "[]"); }
-        catch { return; }
+      // Replay stored entries into the UI. Shared between the localStorage
+      // and Supabase hydrate paths.
+      function renderHydratedHistory(stored) {
         if (!Array.isArray(stored) || !stored.length) return;
-
         const placeholder = document.getElementById("placeholder");
         if (placeholder) placeholder.remove();
-
         for (const entry of stored) {
           history.push(entry);
           if (entry.role === "user") {
@@ -1174,10 +1403,26 @@ Preset use cases (temperature · top-p):
           }
         }
         refreshToolbar();
-        // Defer the scroll a tick so the DOM has had a chance to lay out.
         setTimeout(() => { chatEl.scrollTop = chatEl.scrollHeight; }, 0);
       }
-      hydrateConversationFromStorage();
+
+      // Hydrate dispatch: route to local or Supabase based on the Memory
+      // backend selection. saveHistoryToStorage() and the Supabase helpers
+      // are defined further down; this just kicks off the right one at load.
+      async function hydrateConversation() {
+        if (!rememberConversationInput.checked) return;
+        if (getMemoryBackend() === "supabase") {
+          const ok = await hydrateHistoryFromSupabase();
+          if (ok) return;
+          // Fall through to local on Supabase failure so refreshes don't
+          // wipe a user mid-conversation if their network blips.
+        }
+        let stored;
+        try { stored = JSON.parse(localStorage.getItem(KEYS.history) || "[]"); }
+        catch { return; }
+        renderHydratedHistory(stored);
+      }
+      hydrateConversation();
 
       // Persist on input.
       keyInput.addEventListener("input", () => setOrClear(KEYS.apiKey, keyInput.value));
@@ -1214,22 +1459,114 @@ Preset use cases (temperature · top-p):
         } else {
           localStorage.removeItem(KEYS.remember_conversation);
           localStorage.removeItem(KEYS.history);
+          // Note: Supabase rows are NOT auto-deleted when the toggle goes off.
+          // Clear chat / Reset all delete them explicitly.
         }
       });
 
-      function saveHistoryToStorage() {
+      // Memory backend selection. Persisting the choice + show/hide Supabase
+      // fields when the radio changes.
+      for (const r of memoryBackendRadios) {
+        r.addEventListener("change", () => {
+          if (!r.checked) return;
+          localStorage.setItem(KEYS.memory_backend, r.value);
+          syncSupabaseFieldsVisibility();
+        });
+      }
+      supabaseUrlInput.addEventListener("input", () => {
+        if (supabaseUrlInput.value) localStorage.setItem(KEYS.supabase_url, supabaseUrlInput.value);
+        else localStorage.removeItem(KEYS.supabase_url);
+        supabase = null; // force re-init with new credentials on next call
+      });
+      supabaseKeyInput.addEventListener("input", () => {
+        if (supabaseKeyInput.value) localStorage.setItem(KEYS.supabase_key, supabaseKeyInput.value);
+        else localStorage.removeItem(KEYS.supabase_key);
+        supabase = null;
+      });
+
+      // Save chat history. Dispatches to localStorage (fast, browser-only) or
+      // to Supabase (cross-device) based on the Memory backend selection.
+      // Same JSON shape lands in either place; the storage backend is
+      // interchangeable. That's the lesson.
+      async function saveHistoryToStorage() {
         if (!rememberConversationInput.checked) return;
-        try {
-          // JSON.stringify already skips Symbol-keyed properties (the WRAP
-          // ref), so we can serialise history directly.
-          localStorage.setItem(KEYS.history, JSON.stringify(history));
-        } catch {
-          // If localStorage is full or unavailable, fail quietly — the
-          // in-memory chat keeps working.
+        const backend = getMemoryBackend();
+        if (backend === "supabase") {
+          await saveHistoryToSupabase();
+        } else {
+          try {
+            // JSON.stringify already skips Symbol-keyed properties (the WRAP
+            // ref), so we can serialise history directly.
+            localStorage.setItem(KEYS.history, JSON.stringify(history));
+          } catch {
+            // If localStorage is full or unavailable, fail quietly — the
+            // in-memory chat keeps working.
+          }
         }
       }
 
-      // Skill textarea: persist on input, refresh state hint via reset-all.
+      // Supabase persistence. Replace-on-write strategy: the whole history
+      // array gets wiped and re-inserted each save. Simpler than diffing,
+      // and a class of 20 chatting for an hour stays well under any limit.
+      // Table schema (set up once via the Supabase Table Editor):
+      //   create table chat_memory (
+      //     id          bigserial primary key,
+      //     user_id     text default 'demo',
+      //     role        text,
+      //     content     text,
+      //     payload     jsonb,
+      //     created_at  timestamptz default now()
+      //   );
+      async function saveHistoryToSupabase() {
+        const client = getSupabaseClient();
+        if (!client) {
+          if (supabaseStatus) supabaseStatus.textContent = "Add your Supabase URL + anon key first.";
+          return;
+        }
+        try {
+          await client.from("chat_memory").delete().eq("user_id", "demo");
+          if (history.length) {
+            // Pull WRAP ref off so it doesn't end up in payload.
+            const rows = history.map((m) => ({
+              user_id: "demo",
+              role: m.role,
+              content: m.content,
+              payload: JSON.parse(JSON.stringify(m)),
+            }));
+            const { error } = await client.from("chat_memory").insert(rows);
+            if (error) throw error;
+          }
+          if (supabaseStatus) supabaseStatus.textContent = `Saved ${history.length} row(s) to chat_memory.`;
+        } catch (err) {
+          console.error("Supabase save failed:", err);
+          if (supabaseStatus) supabaseStatus.textContent = `Supabase save failed: ${err.message || err}`;
+        }
+      }
+
+      async function hydrateHistoryFromSupabase() {
+        if (!rememberConversationInput.checked) return false;
+        if (getMemoryBackend() !== "supabase") return false;
+        const client = getSupabaseClient();
+        if (!client) return false;
+        try {
+          const { data, error } = await client
+            .from("chat_memory")
+            .select("*")
+            .eq("user_id", "demo")
+            .order("created_at", { ascending: true });
+          if (error) throw error;
+          if (!data || !data.length) return true;
+          renderHydratedHistory(data.map((row) => row.payload || { role: row.role, content: row.content }));
+          if (supabaseStatus) supabaseStatus.textContent = `Hydrated ${data.length} row(s) from chat_memory.`;
+          return true;
+        } catch (err) {
+          console.error("Supabase hydrate failed:", err);
+          if (supabaseStatus) supabaseStatus.textContent = `Supabase hydrate failed: ${err.message || err}`;
+          return false;
+        }
+      }
+
+      // Custom skill textarea: persist on input.
       skillInput.addEventListener("input", () => {
         if (skillInput.value) localStorage.setItem(KEYS.skill, skillInput.value);
         else localStorage.removeItem(KEYS.skill);
@@ -1269,6 +1606,10 @@ Preset use cases (temperature · top-p):
         return dot / (Math.sqrt(na) * Math.sqrt(nb));
       }
 
+      // Index button: APPEND mode. Each click adds the textarea content as
+      // new chunks alongside whatever's already in the index. Lets students
+      // build a multi-document index by pasting (or uploading) a few sources
+      // in turn. The Clear index button wipes everything.
       ragIndexBtn.addEventListener("click", async () => {
         const text = ragDocInput.value.trim();
         if (!text) {
@@ -1276,29 +1617,60 @@ Preset use cases (temperature · top-p):
           return;
         }
         if (!keyInput.value) {
-          ragStatus.textContent = "Add your OpenAI API key in the field above first.";
+          ragStatus.textContent = "Add your OpenAI API key in Settings first.";
           return;
         }
         ragIndexBtn.disabled = true;
+        const before = ragIndex.length;
         ragStatus.textContent = "Indexing…";
         try {
           // Naive ~500-character chunking, no overlap. Good enough for demos.
           const chunks = text.match(/[\s\S]{1,500}/g) || [];
-          const next = [];
           for (let i = 0; i < chunks.length; i++) {
             ragStatus.textContent = `Embedding chunk ${i + 1} of ${chunks.length}…`;
-            next.push({ text: chunks[i], embedding: await embed(chunks[i]) });
+            ragIndex.push({ text: chunks[i], embedding: await embed(chunks[i]) });
           }
-          ragIndex = next;
           try { localStorage.setItem(KEYS.rag_index, JSON.stringify(ragIndex)); }
           catch { /* may exceed quota for very large docs; in-memory still works */ }
-          ragStatus.textContent = `${ragIndex.length} chunks indexed.`;
+          const added = ragIndex.length - before;
+          ragStatus.textContent = `Added ${added} chunk(s). ${ragIndex.length} total in the index.`;
+          ragDocInput.value = "";
+          localStorage.removeItem(KEYS.rag_doc);
         } catch (err) {
           ragStatus.textContent = `Indexing failed: ${err.message || err}`;
         } finally {
           ragIndexBtn.disabled = false;
         }
       });
+
+      // Clear-index button: wipe the in-memory and persisted index.
+      if (ragClearBtn) {
+        ragClearBtn.addEventListener("click", () => {
+          ragIndex = [];
+          try { localStorage.removeItem(KEYS.rag_index); } catch {}
+          ragStatus.textContent = "Index cleared.";
+        });
+      }
+
+      // File upload: read .txt / .md (or any text/* file) into the textarea
+      // so the student can click Index. Skips PDF — that needs a parser.
+      if (ragFileInput) {
+        ragFileInput.addEventListener("change", async (event) => {
+          const file = event.target.files?.[0];
+          if (!file) return;
+          const reader = new FileReader();
+          reader.onload = () => {
+            ragDocInput.value = String(reader.result || "");
+            localStorage.setItem(KEYS.rag_doc, ragDocInput.value);
+            ragStatus.textContent = `Loaded ${file.name} (${(file.size / 1024).toFixed(1)} KB). Click Index to embed it.`;
+          };
+          reader.onerror = () => {
+            ragStatus.textContent = `Could not read ${file.name}.`;
+          };
+          reader.readAsText(file);
+          ragFileInput.value = ""; // allow re-upload of the same file
+        });
+      }
 
       async function retrieveContext(query, k = 3) {
         if (!ragIndex.length || !query) return "";
@@ -1315,13 +1687,28 @@ Preset use cases (temperature · top-p):
         }
       }
 
-      // Build the system prompt sent to the model: user's prompt + skill
-      // markdown (if any) + retrieved context (if any). Order: instructions,
+      // Concatenate every active skill (ticked presets + the custom textarea)
+      // into one markdown blob with `---` separators. Empty if nothing active.
+      function getActiveSkillContent() {
+        const parts = [];
+        for (const skill of PRESET_SKILLS) {
+          const cb = document.getElementById(`skill-preset-${skill.id}`);
+          if (cb && cb.checked) {
+            parts.push(`# ${skill.name}\n\n${skill.content}`);
+          }
+        }
+        const custom = skillInput.value.trim();
+        if (custom) parts.push(`# Your skill\n\n${custom}`);
+        return parts.join("\n\n---\n\n");
+      }
+
+      // Build the system prompt sent to the model: user's prompt + active
+      // skills (if any) + retrieved RAG context (if any). Order: instructions,
       // domain knowledge, dynamic context.
       async function buildAugmentedSystemPrompt(lastUserMessage) {
         const parts = [systemInput.value];
-        const skill = skillInput.value.trim();
-        if (skill) parts.push("# Skill\n\n" + skill);
+        const skills = getActiveSkillContent();
+        if (skills) parts.push(skills);
         if (lastUserMessage && ragIndex.length) {
           const ctx = await retrieveContext(lastUserMessage);
           if (ctx) {
@@ -1332,55 +1719,6 @@ Preset use cases (temperature · top-p):
         }
         return parts.join("\n\n---\n\n");
       }
-
-      // Summarise the conversation as markdown and append as an assistant
-      // message. Same model as chat. Standalone of the chat flow — doesn't
-      // touch history's prompt-token tracking.
-      async function summariseConversation() {
-        if (!history.length) return;
-        if (!keyInput.value) {
-          addMessage("error", "Add your OpenAI API key first.");
-          return;
-        }
-        summariseBtn.disabled = true;
-        const loading = addMessage("assistant", "");
-        loading.bubble.innerHTML = '<em>Summarising…</em>';
-        try {
-          const transcript = history
-            .map((m) => `${m.role}: ${m.content}`)
-            .join("\n\n");
-          const r = await fetch("https://api.openai.com/v1/chat/completions", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: `Bearer ${keyInput.value}`,
-            },
-            body: JSON.stringify({
-              model: modelSelect.value,
-              messages: [
-                {
-                  role: "system",
-                  content:
-                    "Summarise the following conversation as markdown. Use a level-2 heading for the topic and bulleted lists for key points and any action items. Be faithful to what was actually said; don't add details that aren't there.",
-                },
-                { role: "user", content: transcript },
-              ],
-              max_completion_tokens: 800,
-            }),
-          });
-          const body = await r.json();
-          if (!r.ok) throw new Error(body?.error?.message || `HTTP ${r.status}`);
-          const summary = body.choices?.[0]?.message?.content || "(empty)";
-          loading.bubble.innerHTML = renderMarkdown(summary);
-          chatEl.scrollTop = chatEl.scrollHeight;
-        } catch (err) {
-          loading.wrap.remove();
-          addMessage("error", err.message || String(err));
-        } finally {
-          summariseBtn.disabled = !history.length;
-        }
-      }
-      summariseBtn.addEventListener("click", summariseConversation);
 
       samplingPresetSelect.addEventListener("change", () => {
         const key = samplingPresetSelect.value;
@@ -1686,10 +2024,30 @@ Preset use cases (temperature · top-p):
       //             cached_tokens, reasoning_tokens), finish_reason, served
       //             model snapshot, latency, response id, full logprobs.
       function downloadJson(detailed) {
+        // Capture which skills are active right now so students can see
+        // what was actually injected. system_prompt_assembled mirrors what
+        // the next API call would send (without RAG context, since that is
+        // computed per-query at request time).
+        const activeSkills = PRESET_SKILLS
+          .filter((s) => {
+            const cb = document.getElementById(`skill-preset-${s.id}`);
+            return cb && cb.checked;
+          })
+          .map((s) => ({ id: s.id, name: s.name }));
+        const customSkill = skillInput.value.trim();
+        const skillsBlob = getActiveSkillContent();
+        const assembledParts = [systemInput.value];
+        if (skillsBlob) assembledParts.push(skillsBlob);
+        const systemPromptAssembled = assembledParts.join("\n\n---\n\n");
         const basePayload = {
           exported_at: new Date().toISOString(),
           model: modelSelect.value,
           system_prompt: systemInput.value,
+          skills_active: activeSkills,
+          custom_skill: customSkill || null,
+          system_prompt_assembled: systemPromptAssembled,
+          memory_backend: getMemoryBackend(),
+          rag_chunks_indexed: ragIndex.length,
         };
         let payload;
         if (detailed) {
@@ -1725,7 +2083,7 @@ Preset use cases (temperature · top-p):
       downloadSimpleBtn.addEventListener("click", () => downloadJson(false));
       downloadDetailedBtn.addEventListener("click", () => downloadJson(true));
 
-      clearBtn.addEventListener("click", () => {
+      clearBtn.addEventListener("click", async () => {
         if (!history.length) return;
         if (!confirm("Clear the conversation? Key and settings stay.")) return;
         history.length = 0;
@@ -1738,6 +2096,15 @@ Preset use cases (temperature · top-p):
         // Clear persisted history too. Toggle stays on — user keeps the
         // intent to remember future conversations.
         localStorage.removeItem(KEYS.history);
+        // Also drop Supabase rows if that's the active backend, so DevTools
+        // and the Supabase dashboard agree on "the chat is empty."
+        if (getMemoryBackend() === "supabase") {
+          const client = getSupabaseClient();
+          if (client) {
+            try { await client.from("chat_memory").delete().eq("user_id", "demo"); }
+            catch (err) { console.error("Supabase clear failed:", err); }
+          }
+        }
         renderHero();
         refreshToolbar();
       });
@@ -1751,20 +2118,48 @@ Preset use cases (temperature · top-p):
         `;
       }
 
-      resetAllBtn.addEventListener("click", () => {
+      resetAllBtn.addEventListener("click", async () => {
         if (!confirm("Reset everything? This wipes the key, the system prompt, the sliders, and the conversation.")) return;
-        Object.values(KEYS).forEach((k) => sessionStorage.removeItem(k));
+        // If Supabase is the active backend and the user has provided
+        // credentials, wipe the rows BEFORE clearing the credentials below
+        // so the dashboard agrees with the in-app reset.
+        if (getMemoryBackend() === "supabase") {
+          const client = getSupabaseClient();
+          if (client) {
+            try { await client.from("chat_memory").delete().eq("user_id", "demo"); }
+            catch (err) { console.error("Supabase clear failed:", err); }
+          }
+        }
+        // sessionStorage: scalar settings only (skill_active_prefix is a
+        // localStorage prefix, not a real key — skip it via filter).
+        Object.entries(KEYS).forEach(([name, k]) => {
+          if (name === "skill_active_prefix") return;
+          sessionStorage.removeItem(k);
+        });
         // Reset all also wipes localStorage state — persistent memory
-        // toggle and saved history both go, plus skill / RAG state.
+        // toggle, saved history, skill state, RAG state, Supabase creds.
         localStorage.removeItem(KEYS.remember_conversation);
         localStorage.removeItem(KEYS.history);
         localStorage.removeItem(KEYS.skill);
         localStorage.removeItem(KEYS.rag_doc);
         localStorage.removeItem(KEYS.rag_index);
+        localStorage.removeItem(KEYS.memory_backend);
+        localStorage.removeItem(KEYS.supabase_url);
+        localStorage.removeItem(KEYS.supabase_key);
+        for (const skill of PRESET_SKILLS) {
+          localStorage.removeItem(KEYS.skill_active_prefix + skill.id);
+          const cb = document.getElementById(`skill-preset-${skill.id}`);
+          if (cb) cb.checked = false;
+        }
         skillInput.value = "";
         ragDocInput.value = "";
         ragIndex = [];
-        ragStatus.textContent = "No document indexed.";
+        ragStatus.textContent = "No documents indexed.";
+        supabaseUrlInput.value = "";
+        supabaseKeyInput.value = "";
+        for (const r of memoryBackendRadios) r.checked = (r.value === "local");
+        syncSupabaseFieldsVisibility();
+        if (supabaseStatus) supabaseStatus.textContent = "Add URL + anon key, then send a message to test.";
         keyInput.value = "";
         systemInput.value = DEFAULT_SYSTEM;
         modelSelect.value = DEFAULTS.model;
@@ -2076,7 +2471,6 @@ Preset use cases (temperature · top-p):
         downloadSimpleBtn.disabled = !hasHistory;
         downloadDetailedBtn.disabled = !hasHistory;
         clearBtn.disabled = !hasHistory;
-        summariseBtn.disabled = !hasHistory;
         statMsgs.textContent = history.length;
         statIn.textContent = tokensIn.toLocaleString();
         statOut.textContent = tokensOut.toLocaleString();
