@@ -994,7 +994,7 @@ Preset use cases (temperature · top-p):
       <div class="drawer-footer">
         <button type="button" id="download-simple" disabled title="Transcript only—role, content, model, system prompt">Simple JSON</button>
         <button type="button" id="download-detailed" disabled title="Everything—per-turn usage, finish reasons, latency, logprobs">Detailed JSON</button>
-        <button type="button" id="clear" disabled>Clear chat</button>
+        <button type="button" id="clear" disabled title="Clear conversation in this browser. Cloud-stored rows (Supabase) stay—reload to bring them back.">Clear chat</button>
         <button type="button" id="reset-all" class="danger">Reset all</button>
       </div>
     </aside>
@@ -2086,9 +2086,9 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
       downloadSimpleBtn.addEventListener("click", () => downloadJson(false));
       downloadDetailedBtn.addEventListener("click", () => downloadJson(true));
 
-      clearBtn.addEventListener("click", async () => {
+      clearBtn.addEventListener("click", () => {
         if (!history.length) return;
-        if (!confirm("Clear the conversation? Key and settings stay.")) return;
+        if (!confirm("Clear the conversation in this browser? Cloud rows in Supabase (if any) stay — reload to bring them back. Use Reset all to wipe both.")) return;
         history.length = 0;
         tokensIn = 0;
         tokensOut = 0;
@@ -2096,18 +2096,11 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         costTotal = 0;
         prevPromptTokens = 0;
         prevCompletionTokens = 0;
-        // Clear persisted history too. Toggle stays on—user keeps the
-        // intent to remember future conversations.
+        // Clear persisted history on the browser side only. Supabase rows
+        // (when that's the active backend) are intentionally left alone so
+        // a reload re-hydrates the conversation from the cloud — that's
+        // the persistence demo. Reset all wipes both.
         localStorage.removeItem(KEYS.history);
-        // Also drop Supabase rows if that's the active backend, so DevTools
-        // and the Supabase dashboard agree on "the chat is empty."
-        if (getMemoryBackend() === "supabase") {
-          const client = getSupabaseClient();
-          if (client) {
-            try { await client.from("chat_memory").delete().eq("user_id", "demo"); }
-            catch (err) { console.error("Supabase clear failed:", err); }
-          }
-        }
         renderHero();
         refreshToolbar();
       });
