@@ -1348,22 +1348,24 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
       syncSupabaseFieldsVisibility();
 
       // Supabase client, lazily created when both URL and key are present.
-      let supabase = null;
+      // (Variable named `supabaseClient` to avoid colliding with the global
+      // `supabase` namespace from the @supabase/supabase-js CDN script.)
+      let supabaseClient = null;
       function getSupabaseClient() {
         const url = supabaseUrlInput.value.trim();
         const key = supabaseKeyInput.value.trim();
         if (!url || !key) return null;
-        if (!supabase || supabase.__url !== url || supabase.__key !== key) {
+        if (!supabaseClient || supabaseClient.__url !== url || supabaseClient.__key !== key) {
           try {
-            supabase = window.supabase.createClient(url, key);
-            supabase.__url = url;
-            supabase.__key = key;
+            supabaseClient = window.supabase.createClient(url, key);
+            supabaseClient.__url = url;
+            supabaseClient.__key = key;
           } catch (err) {
-            supabase = null;
+            supabaseClient = null;
             console.error("Supabase init failed:", err);
           }
         }
-        return supabase;
+        return supabaseClient;
       }
 
       renderSliderValues();
@@ -1476,12 +1478,12 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
       supabaseUrlInput.addEventListener("input", () => {
         if (supabaseUrlInput.value) localStorage.setItem(KEYS.supabase_url, supabaseUrlInput.value);
         else localStorage.removeItem(KEYS.supabase_url);
-        supabase = null; // force re-init with new credentials on next call
+        supabaseClient = null; // force re-init with new credentials on next call
       });
       supabaseKeyInput.addEventListener("input", () => {
         if (supabaseKeyInput.value) localStorage.setItem(KEYS.supabase_key, supabaseKeyInput.value);
         else localStorage.removeItem(KEYS.supabase_key);
-        supabase = null;
+        supabaseClient = null;
       });
 
       // Save chat history. Dispatches to localStorage (fast, browser-only) or
