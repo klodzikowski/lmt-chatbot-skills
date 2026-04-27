@@ -978,11 +978,7 @@ Preset use cases (temperature · top-p):
               </div>
               <textarea id="rag-doc" spellcheck="false" placeholder="Paste text here, then click Index. Add more documents by pasting again and indexing—they accumulate."></textarea>
               <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;">
-                <label class="mini-btn" style="cursor:pointer;display:inline-flex;align-items:center;" title="Read a .txt or .md file into the textarea so you can index it.">
-                  Upload .txt / .md
-                  <input type="file" id="rag-file" accept=".txt,.md,text/plain,text/markdown" style="display:none;" />
-                </label>
-                <button type="button" id="rag-index" class="mini-btn" title="Chunk the textarea content into ~500-character pieces, embed each via OpenAI's text-embedding-3-small, and append to the index. Cumulative — paste another doc and click again to add more.">Index document</button>
+                <button type="button" id="rag-index" class="mini-btn" title="Chunk the textarea content into ~500-character pieces, embed each via OpenAI's text-embedding-3-small, and append to the index. Cumulative—paste another doc and click again to add more.">Index document</button>
                 <button type="button" id="rag-clear" class="mini-btn" title="Wipe the indexed chunks from memory and from localStorage. The textarea is unaffected.">Clear index</button>
               </div>
               <p class="field-note" id="rag-status">No documents indexed.</p>
@@ -1250,7 +1246,6 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
       const ragDocInput = document.getElementById("rag-doc");
       const ragIndexBtn = document.getElementById("rag-index");
       const ragClearBtn = document.getElementById("rag-clear");
-      const ragFileInput = document.getElementById("rag-file");
       const ragStatus = document.getElementById("rag-status");
       const memoryBackendRadios = document.querySelectorAll('input[name="memory-backend"]');
       const supabaseFields = document.getElementById("supabase-fields");
@@ -1657,25 +1652,6 @@ If the answer is no, accept cleanly: "Thanks—I'll have it in by [original dead
         });
       }
 
-      // File upload: read .txt / .md (or any text/* file) into the textarea
-      // so the student can click Index. Skips PDF—that needs a parser.
-      if (ragFileInput) {
-        ragFileInput.addEventListener("change", async (event) => {
-          const file = event.target.files?.[0];
-          if (!file) return;
-          const reader = new FileReader();
-          reader.onload = () => {
-            ragDocInput.value = String(reader.result || "");
-            localStorage.setItem(KEYS.rag_doc, ragDocInput.value);
-            ragStatus.textContent = `Loaded ${file.name} (${(file.size / 1024).toFixed(1)} KB). Click Index to embed it.`;
-          };
-          reader.onerror = () => {
-            ragStatus.textContent = `Could not read ${file.name}.`;
-          };
-          reader.readAsText(file);
-          ragFileInput.value = ""; // allow re-upload of the same file
-        });
-      }
 
       async function retrieveContext(query, k = 3) {
         if (!ragIndex.length || !query) return "";
