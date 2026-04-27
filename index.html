@@ -357,7 +357,7 @@
       }
       body[data-sampling-locked="true"] .locked-note { display: block; }
       /* The logprobs-specific note only fires when the user actually has
-         logprobs toggled on — otherwise it's noise. */
+         logprobs toggled on—otherwise it's noise. */
       body[data-sampling-locked="true"] #logprobs-locked-note { display: none; }
       body[data-sampling-locked="true"][data-logprobs-on="true"] #logprobs-locked-note { display: block; }
       body[data-sampling-locked="true"] .field.sampling input[type="range"] {
@@ -835,7 +835,7 @@
 
             <div class="field">
               <div class="field-header">
-                <label for="model">Model<button type="button" class="help-tip" data-help="Newest first. Small, fast variants only (nano / mini / turbo) — free-tier friendly. If your key rejects a newer model, step down a generation." aria-label="About model choice">?</button></label>
+                <label for="model">Model<button type="button" class="help-tip" data-help="Newest first. Small, fast variants only (nano / mini / turbo)—free-tier friendly. If your key rejects a newer model, step down a generation." aria-label="About model choice">?</button></label>
               </div>
               <select id="model">
                 <option value="gpt-5-nano">gpt-5-nano · 2026 · $0.05 in / $0.40 out · locked sampling</option>
@@ -867,22 +867,22 @@
               <button type="button" class="help-tip wide" data-help="Temperature and top-p both control how random the reply is, but in different ways. Best practice: change one at a time so you can tell which knob caused a shift.
 
 Preset use cases (temperature · top-p):
-• 0.0 · 1.0 — Reproducible: same reply for everyone (uses a fixed seed)
-• 0.2 · 0.2 — Email / deterministic: predictable, focused
-• 0.2 · 1.0 — Translation: faithful, varied vocabulary
-• 1.3 · 0.5 — Creative writing: novel but coherent
-• 1.3 · 1.0 — Brainstorming: wild, diverse
-• 2.0 · 0.3 — Chaos: both extremes, watch it break" aria-label="About sampling">?</button>
+• 0.0 · 1.0—Reproducible: same reply for everyone (uses a fixed seed)
+• 0.2 · 0.2—Email / deterministic: predictable, focused
+• 0.2 · 1.0—Translation: faithful, varied vocabulary
+• 1.3 · 0.5—Creative writing: novel but coherent
+• 1.3 · 1.0—Brainstorming: wild, diverse
+• 2.0 · 0.3—Chaos: both extremes, watch it break" aria-label="About sampling">?</button>
             </div>
 
             <select id="sampling-preset" class="preset-select" aria-label="Sampling presets">
               <option value="">Preset use case…</option>
-              <option value="reproducible">temp 0.0 · top-p 1.0 · Reproducible — same output for everyone</option>
-              <option value="deterministic">temp 0.2 · top-p 0.2 · Email — predictable, focused</option>
-              <option value="translation">temp 0.2 · top-p 1.0 · Translation — faithful, varied vocab</option>
-              <option value="creative">temp 1.3 · top-p 0.5 · Creative writing — novel but coherent</option>
-              <option value="brainstorming">temp 1.3 · top-p 1.0 · Brainstorming — wild, diverse</option>
-              <option value="chaos">temp 2.0 · top-p 0.3 · Chaos — watch it break</option>
+              <option value="reproducible">temp 0.0 · top-p 1.0 · Reproducible—same output for everyone</option>
+              <option value="deterministic">temp 0.2 · top-p 0.2 · Email—predictable, focused</option>
+              <option value="translation">temp 0.2 · top-p 1.0 · Translation—faithful, varied vocab</option>
+              <option value="creative">temp 1.3 · top-p 0.5 · Creative writing—novel but coherent</option>
+              <option value="brainstorming">temp 1.3 · top-p 1.0 · Brainstorming—wild, diverse</option>
+              <option value="chaos">temp 2.0 · top-p 0.3 · Chaos—watch it break</option>
             </select>
 
             <div class="field sampling">
@@ -957,7 +957,7 @@ Preset use cases (temperature · top-p):
         <details class="drawer-section">
           <summary>Skills</summary>
           <div class="drawer-section-body">
-            <p class="field-note" style="margin-top:.55rem">Tick one or more skills. Each ticked skill is concatenated into the system prompt on every reply — visible in the Download JSON output.</p>
+            <p class="field-note" style="margin-top:.55rem">Tick one or more skills. Each ticked skill is concatenated into the system prompt on every reply—visible in the Download JSON output.</p>
             <div id="preset-skills"></div>
             <div class="field">
               <div class="field-header">
@@ -971,12 +971,12 @@ Preset use cases (temperature · top-p):
         <details class="drawer-section">
           <summary>RAG</summary>
           <div class="drawer-section-body">
-            <p class="field-note" style="margin-top:.55rem">When a skill file isn't enough — too big, or you want retrieval to pick relevant chunks per query — paste a long document and click Index. Top-3 most similar chunks are prepended to the system prompt before each chat call.</p>
+            <p class="field-note" style="margin-top:.55rem">When a skill file isn't enough—too big, or you want retrieval to pick relevant chunks per query—paste a long document and click Index. Top-3 most similar chunks are prepended to the system prompt before each chat call.</p>
             <div class="field">
               <div class="field-header">
-                <label for="rag-doc">RAG document<button type="button" class="help-tip wide" data-help="Paste a long document — Wikipedia article, syllabus, a chapter of your thesis. The Index button chunks it into ~500-character pieces and embeds each via OpenAI's text-embedding-3-small. Top-3 most similar chunks are prepended to your system prompt before each chat call." aria-label="About RAG">?</button></label>
+                <label for="rag-doc">RAG document<button type="button" class="help-tip wide" data-help="Paste a long document—Wikipedia article, syllabus, a chapter of your thesis. The Index button chunks it into ~500-character pieces and embeds each via OpenAI's text-embedding-3-small. Top-3 most similar chunks are prepended to your system prompt before each chat call." aria-label="About RAG">?</button></label>
               </div>
-              <textarea id="rag-doc" spellcheck="false" placeholder="Paste text here, then click Index. Add more documents by pasting again and indexing — they accumulate."></textarea>
+              <textarea id="rag-doc" spellcheck="false" placeholder="Paste text here, then click Index. Add more documents by pasting again and indexing—they accumulate."></textarea>
               <div style="display:flex;gap:.4rem;margin-top:.4rem;flex-wrap:wrap;">
                 <button type="button" id="rag-index" class="mini-btn">Index document</button>
                 <label class="mini-btn" style="cursor:pointer;display:inline-flex;align-items:center;">
@@ -992,8 +992,8 @@ Preset use cases (temperature · top-p):
       </div>
       <div class="drawer-resize" id="drawer-resize" aria-label="Resize sidebar" role="separator" aria-orientation="vertical"></div>
       <div class="drawer-footer">
-        <button type="button" id="download-simple" disabled title="Transcript only — role, content, model, system prompt">Simple JSON</button>
-        <button type="button" id="download-detailed" disabled title="Everything — per-turn usage, finish reasons, latency, logprobs">Detailed JSON</button>
+        <button type="button" id="download-simple" disabled title="Transcript only—role, content, model, system prompt">Simple JSON</button>
+        <button type="button" id="download-detailed" disabled title="Everything—per-turn usage, finish reasons, latency, logprobs">Detailed JSON</button>
         <button type="button" id="clear" disabled>Clear chat</button>
         <button type="button" id="reset-all" class="danger">Reset all</button>
       </div>
@@ -1061,7 +1061,7 @@ Preset use cases (temperature · top-p):
           label: "Dad jokes",
           prompt:
             "You are a dad with dry British humour. Every reply is a relevant dad joke " +
-            "about what the user just said. Short, groan-worthy, deadpan. Emojis allowed — " +
+            "about what the user just said. Short, groan-worthy, deadpan. Emojis allowed—" +
             "use them sparingly as punchlines, like a raised eyebrow, not confetti. " +
             "Family friendly. British English.",
         },
@@ -1078,7 +1078,7 @@ Preset use cases (temperature · top-p):
           label: "Claude-style",
           prompt:
             "You are Claude, an AI assistant made by Anthropic. You are helpful, harmless, " +
-            "and honest. Be thoughtful and substantive — don't rush to a shallow answer " +
+            "and honest. Be thoughtful and substantive—don't rush to a shallow answer " +
             "when the question deserves reflection. Prefer clear prose over bullet lists " +
             "unless structure genuinely helps. Be willing to respectfully push back when " +
             "you disagree. Acknowledge uncertainty rather than inventing facts.",
@@ -1089,7 +1089,7 @@ Preset use cases (temperature · top-p):
             "You are Grok, an AI inspired by the Hitchhiker's Guide to the Galaxy. You " +
             "have a rebellious streak and a dry sense of humour. Answer directly, skip " +
             "the corporate hedging, and don't be afraid of unconventional or edgy takes. " +
-            "Be accurate first, witty second — wit without substance is just noise.",
+            "Be accurate first, witty second—wit without substance is just noise.",
         },
       };
       const DEFAULTS = {
@@ -1111,7 +1111,7 @@ Preset use cases (temperature · top-p):
       // Sampling presets. The middle four are from Alammar & Grootendorst
       // (2024). 'Reproducible' (temp 0, top-p 1) pairs with a fixed seed in
       // callOpenAI to produce the same reply across every student, useful
-      // for classroom alignment demos. 'Chaos' is the opposite — both knobs
+      // for classroom alignment demos. 'Chaos' is the opposite—both knobs
       // pushed to extremes, which reliably produces multilingual gibberish
       // and lands the 'don't tune both to the wall' lesson in one reply.
       const SAMPLING_PRESETS = {
@@ -1187,26 +1187,26 @@ Preset use cases (temperature · top-p):
         {
           id: "thesis",
           name: "Top-mark thesis",
-          blurb: "Sharp MA thesis advisor — Socratic questions, no draft-writing.",
+          blurb: "Sharp MA thesis advisor—Socratic questions, no draft-writing.",
           content: `You're a sharp MA thesis advisor. Your job is to help the student score the highest possible mark.
 
-Open every reply with one Socratic question that exposes the weakest part of their current draft — vague claims, untestable hypotheses, missing methodology, or a literature review that summarises every paper instead of naming three or four tensions in the field.
+Open every reply with one Socratic question that exposes the weakest part of their current draft—vague claims, untestable hypotheses, missing methodology, or a literature review that summarises every paper instead of naming three or four tensions in the field.
 
-Be direct about what examiners actually look for: a defensible thesis statement in the first paragraph, methodology that ties to the research question, results presented before interpretation, and references to the supervisor's own work where genuinely relevant — that's not flattery, that's signal you've done the reading.
+Be direct about what examiners actually look for: a defensible thesis statement in the first paragraph, methodology that ties to the research question, results presented before interpretation, and references to the supervisor's own work where genuinely relevant—that's not flattery, that's signal you've done the reading.
 
 Reject vague verbs like "explore" or "examine." Demand specifics. Never write the draft for the student.`,
         },
         {
           id: "charm",
           name: "Charm a room",
-          blurb: "Honest social mechanics — no creepy hacks.",
-          content: `You're a frank charm coach. The user wants people to like them more — at networking events, in seminars, at parties — without coming across as smarmy.
+          blurb: "Honest social mechanics—no creepy hacks.",
+          content: `You're a frank charm coach. The user wants people to like them more—at networking events, in seminars, at parties—without coming across as smarmy.
 
-Lead every reply with one of three moves: ask a specific question (about the other person's recent work, a decision they made, a struggle they're working through); remember and use names (if you forget, say so cheerfully and ask again — never bluff); match tempo (speed of speech, formality, level of detail).
+Lead every reply with one of three moves: ask a specific question (about the other person's recent work, a decision they made, a struggle they're working through); remember and use names (if you forget, say so cheerfully and ask again—never bluff); match tempo (speed of speech, formality, level of detail).
 
 Avoid charm hacks. The "say their name three times" trick reads creepy. Mirroring postures looks like surveillance. The win is genuine attention, not a script.
 
-Compliment specifics — a choice they made, a question they asked — never looks.`,
+Compliment specifics—a choice they made, a question they asked—never looks.`,
         },
         {
           id: "deadline",
@@ -1214,11 +1214,11 @@ Compliment specifics — a choice they made, a question they asked — never loo
           blurb: "Email structure for asking professors for an extension.",
           content: `You help students negotiate deadline extensions without burning bridges with their professors.
 
-Email structure: subject line states the request directly ("Extension request: [assignment], [course]"). First sentence proposes the new deadline — not an apology. Second sentence: a specific, brief reason (illness, conflicting deadline, scope mismatch you've discovered). Third sentence: what you've already done so the professor sees momentum.
+Email structure: subject line states the request directly ("Extension request: [assignment], [course]"). First sentence proposes the new deadline—not an apology. Second sentence: a specific, brief reason (illness, conflicting deadline, scope mismatch you've discovered). Third sentence: what you've already done so the professor sees momentum.
 
 Never blame the syllabus or the assignment design. Never cc the department head on the first ask. Don't ask twice in one term unless the situation is genuinely new.
 
-If the answer is no, accept cleanly: "Thanks — I'll have it in by [original deadline] then." Don't argue.`,
+If the answer is no, accept cleanly: "Thanks—I'll have it in by [original deadline] then." Don't argue.`,
         },
       ];
 
@@ -1502,7 +1502,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
             // ref), so we can serialise history directly.
             localStorage.setItem(KEYS.history, JSON.stringify(history));
           } catch {
-            // If localStorage is full or unavailable, fail quietly — the
+            // If localStorage is full or unavailable, fail quietly—the
             // in-memory chat keeps working.
           }
         }
@@ -1656,7 +1656,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
       }
 
       // File upload: read .txt / .md (or any text/* file) into the textarea
-      // so the student can click Index. Skips PDF — that needs a parser.
+      // so the student can click Index. Skips PDF—that needs a parser.
       if (ragFileInput) {
         ragFileInput.addEventListener("change", async (event) => {
           const file = event.target.files?.[0];
@@ -1913,7 +1913,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
             loading.bubble.appendChild(document.createTextNode(text));
             if (wasAtBottom) chatEl.scrollTop = chatEl.scrollHeight;
           };
-          // Build the augmented system prompt — base + skill + retrieved
+          // Build the augmented system prompt—base + skill + retrieved
           // RAG context for the latest user message. Falls back to the
           // base system prompt if neither extension is in use.
           const lastUserMessage = [...history].reverse().find((m) => m.role === "user")?.content || "";
@@ -2020,10 +2020,10 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
       }
 
       // Two flavours of JSON export.
-      //   simple:   a human-readable transcript — model, system prompt, and
+      //   simple:   a human-readable transcript—model, system prompt, and
       //             each turn as just { role, content }. Looks like a regular
       //             OpenAI chat-completion messages payload.
-      //   detailed: everything the app has captured — per-turn usage (incl.
+      //   detailed: everything the app has captured—per-turn usage (incl.
       //             cached_tokens, reasoning_tokens), finish_reason, served
       //             model snapshot, latency, response id, full logprobs.
       function downloadJson(detailed) {
@@ -2096,7 +2096,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
         costTotal = 0;
         prevPromptTokens = 0;
         prevCompletionTokens = 0;
-        // Clear persisted history too. Toggle stays on — user keeps the
+        // Clear persisted history too. Toggle stays on—user keeps the
         // intent to remember future conversations.
         localStorage.removeItem(KEYS.history);
         // Also drop Supabase rows if that's the active backend, so DevTools
@@ -2134,12 +2134,12 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
           }
         }
         // sessionStorage: scalar settings only (skill_active_prefix is a
-        // localStorage prefix, not a real key — skip it via filter).
+        // localStorage prefix, not a real key—skip it via filter).
         Object.entries(KEYS).forEach(([name, k]) => {
           if (name === "skill_active_prefix") return;
           sessionStorage.removeItem(k);
         });
-        // Reset all also wipes localStorage state — persistent memory
+        // Reset all also wipes localStorage state—persistent memory
         // toggle, saved history, skill state, RAG state, Supabase creds.
         localStorage.removeItem(KEYS.remember_conversation);
         localStorage.removeItem(KEYS.history);
@@ -2218,7 +2218,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
           // When the user picks the 'Reproducible' preset (temperature 0),
           // pin OpenAI's sampler to a fixed seed so every student who sends
           // the same prompt gets byte-identical output. Best-effort per the
-          // API reference — and without this, temp 0 alone is still subject
+          // API reference—and without this, temp 0 alone is still subject
           // to backend variance.
           if (temperature === 0) payload.seed = 42;
         }
@@ -2291,7 +2291,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
           }
         }
         // Flush the decoder and any trailing line the server didn't
-        // terminate with a newline — otherwise we'd silently drop the last
+        // terminate with a newline—otherwise we'd silently drop the last
         // data event when the stream ends without a final \n.
         buffer += decoder.decode();
         if (buffer.trim()) processSseLine(buffer);
@@ -2333,7 +2333,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
           chip.textContent = item.token;
           chip.style.background = logprobToColor(item.logprob);
           const prob = Math.exp(item.logprob) * 100;
-          chip.title = `${prob.toFixed(2)}% — click for alternatives`;
+          chip.title = `${prob.toFixed(2)}%—click for alternatives`;
           chip.addEventListener("click", (event) => {
             event.stopPropagation();
             showLogprobPopover(chip, item);
@@ -2359,7 +2359,7 @@ If the answer is no, accept cleanly: "Thanks — I'll have it in by [original de
         const title = document.createElement("div");
         title.className = "popover-title";
         const chosenProb = Math.exp(item.logprob) * 100;
-        title.textContent = `"${item.token}" — ${chosenProb.toFixed(2)}% chosen`;
+        title.textContent = `"${item.token}"—${chosenProb.toFixed(2)}% chosen`;
         popover.appendChild(title);
 
         const list = document.createElement("ul");
