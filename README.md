@@ -1,4 +1,10 @@
-# LMT Chatbot—Skills edition
+# LMT Chatbot #2 (Memory, skills, knowledge)
+
+Homework: 
+
+Optional video: As we continue evolving our chatbots towards agents, context management will become increasingly important for increasing the functionality of your system and maintaining its reliability. See a quick overview of one of the main challenges, context rotting. We dealt with it in a very rudimentary way today (by saving verbatim payloads) and there are better ways of dealing with it that you will encounter later (e.g. summarising chats into an actual 'memory' of key facts, just like apps such as ChatGPT do).  
+
+link
 
 A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot) for Class 20 of the 2 MA LMT *Artificial Intelligence* course at Adam Mickiewicz University. Single static HTML file, no build step. Adds three layers on top of the Class 19 baseline:
 
