@@ -1666,6 +1666,7 @@ The conjecture was first presented at the 2024 informal Poznań Cognitive-Mathem
         else localStorage.removeItem(KEYS.rag_doc);
       });
 
+      // Returns a 1536-dimensional float vector (text-embedding-3-small).
       async function embed(text) {
         const r = await fetch("https://api.openai.com/v1/embeddings", {
           method: "POST",
