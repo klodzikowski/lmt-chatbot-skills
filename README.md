@@ -6,6 +6,15 @@ A reference fork of [`lmt-chatbot`](https://github.com/klodzikowski/lmt-chatbot)
 - **Skills.** Structured custom instructions or domain know-how injected into the system prompt. Three presets plus a custom markdown textarea.
 - **RAG.** Two preset documents plus paste-your-own. Chunks, embeds, and retrieves the top-3 most similar passages before each reply.
 
+**At a glance:**
+
+| Component | OpenAI calls | Contribution to the system prompt |
+| --- | --- | --- |
+| **Memory** | None—`localStorage` (browser) or Supabase Postgres (cloud) | None directly; rehydrated chat history flows in via `messages` |
+| **Skills** | None—string concatenation only | Ticked markdown blocks, joined with `---` separators |
+| **RAG** | `text-embedding-3-small`—vectorises each chunk at index time, then the user query at chat time | Top-3 chunks (cosine-ranked) under a `# Retrieved context` header |
+| **Orchestrator** (`buildAugmentedSystemPrompt`) | None | Joins the three contributions with `---` and ships the assembled prompt to `/v1/chat/completions` |
+
 ## Try it
 
 [klodzikowski.github.io/lmt-chatbot-skills](https://klodzikowski.github.io/lmt-chatbot-skills/). Paste your OpenAI key into Settings, then explore the four drawers: Settings, Memory, Skills, RAG.
